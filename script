@@ -1,0 +1,1386 @@
+:global OSAMAIMPORT;:global OSAMA;:if (("$OSAMAIMPORT")=[:tostr [/sys cl get time]] && [:len $OSAMA]>0) do={:quit ;};
+:do {:set $OSAMAIMPORT [/sys cl get time];} on-error={ };
+:global THISROUTER;:set $THISROUTER  [/system resource get];
+:global GQNID;:if ([:len $GQNID]=0) do={:set $GQNID "address";};
+:global GETACTIVE;:set $GETACTIVE do={:local Out [:toarray ""];:local OP;/ip hot act find [:local A ({"mac-address"=$"mac-address";"user"=$user;"address"=$address;".id"=$".id";"radius"=$radius;"comment"=$comment;"uptime"=$uptime});:set $OP [:tostr ((($A->("$OPTION")),($A->("user")))->0)];:set ($Out->("$OP")) (($Out->("$OP")),({$A}));];:return $Out;};
+:global GETACTIVESPD;:set $GETACTIVESPD do={:global LSTSPEED;:local Out [:toarray ""];/ip hot act find [:if ([:len ($LSTSPEED->("$user"))]>0) do={:local A [:toarray ""];:local a [:tostr $address];:set ($A->("$a")) ({"mac-address"=$"mac-address";".id"=$".id";"radius"=$radius;});:set ($Out->("$user")) (($Out->("$user")),$A);};];:return $Out;};
+:global GETSPEEDS;:set $GETSPEEDS do={:global SPEEDS;:global OSAMA;:global LSTSPEED;:local Out [:toarray ""];:foreach A,s in=$spds do={:local U [:tostr ($s->"U")];:local M [:tostr ($s->("M"))];:local UMA ($U.",".$M.",".$A);:local UM ($U.",".$M);:set ($Out->("$A")) (($SPEEDS->("$U")),($SPEEDS->("$UM")),($SPEEDS->("$UMA")),($LSTSPEED->("$UM")));:set ($SPEEDS->("$A")) (($SPEEDS->("$A")),$s);};:return $Out;}
+:global GETHOST;:set $GETHOST do={:local Out [:toarray ""];/ip hotspot host find [:local ta [:tostr $"to-address"];:set ($Out->("$ta")) ({"M"=$"mac-address";"A"=[:tostr $"address"];"ID"=$".id";"S"=$"server"});];:return $Out;};
+:global GETQUEQES;:set $GETQUEQES do={:local Out [:toarray ""];:local OP;/queue simple find [:local A ({"target"=$target;"name"=$name;".id"=$".id";"max-limit"=$"max-limit";"comment"=$comment;"parent"=$parent;"queue"=$queue;});:set $OP [:tostr ((($A->("$OPTION")),($A->("name")))->0)];:set ($Out->("$OP")) (($Out->("$OP")),({$A}));];:return $Out;};
+:global CACHE;:global OSAMA;:set $OSAMA [:toarray ""];
+:global GETCACHE;:set $GETCACHE do={:global CACHE;:do {:local ca ([:tostr $cname]."-".[:tostr $1]."-".[:tostr $2]."-".[:tostr $3]."-".[:tostr $4]."-".[:tostr $5]."-".[:tostr $u]."-".[:tostr $a]."-".[:tostr $m]."-".[:tostr $c]."-".[:tostr $s]);:if ([:len $ca]<1024) do={:if ([:len ($CACHE->("$ca"))]=0) do={:set ($CACHE->("$ca")) [$callBack $1 $2 $3 $4 $5 $6 $7 $8 $9 u=$u a=$a m=$m s=$s c=$c];:local O ($CACHE->("$ca"));:return $O;} else={:local O ($CACHE->("$ca"));:return $O;}};} on-error={ };:return [$callBack $1 $2 $3 $4 $5 $6 $7 $8 $9 u=$u a=$a m=$m s=$s c=$c b=$b d=$d];};
+:global NOFUN;:set $NOFUN do={:return $1;};
+:global MAP;:set $MAP do={:local Out [:toarray ""];:global NOFUN;:if ([:typeof $FN]!="array") do={:set $FN $NOFUN;};:foreach n,v in=$1 do={:set ($Out->$n) [$FN $v Name=$n Out=$Out P1=$P1 P2=$P2 P3=$P3 P4=$P4 P5=$P5 P6=$P6];};};
+:global GETS;:set $GETS do={:local L [:len $S];:if ([:len $LN]>0) do={:set $L $Ln;};:if ($L<=0) do={:return ({($S->0->("$n"))});};:return [:pick 0 (($S->0->("$n")),($S->1->("$n")),($S->2->("$n")),($S->3->("$n")),($S->4->("$n")),($S->5->("$n")),($S->6->("$n")),($S->7->("$n")),($S->8->("$n")),($S->9->("$n"))) $L];};
+:global GETSP;:set $GETSP do={:global GETS;:return  ({$AND;"SD"=($S->("SD"));"SPD"=[$GETS S=$S n=("S")];"SPN"=[$GETS S=$S n=("N")];"SPT"=[$GETS S=$S n=("T")];"SPP"=[$GETS S=$S n=("P")];"SPL"=[$GETS S=$S n=("L")];"SPQ"=[$GETS S=$S n=("Q")]});};
+:global OSAMAACTSESSIONS;:set $OSAMAACTSESSIONS do={
+:global OSAMA;:global OACTIVES;:global IACTIVES;:global FILES;:global ACTSESSIONS;:global SAVESESSIONS;:global SAVESESSIONSALL;:global SAVESESSIONSFILE;:global SAVESESSIONSFILELAST;
+:local Date [/sys cl get date];
+:local Time [:tostr [/sys cl get time]];
+:local TimeS [($OSAMA->("TIMESTAMP")) Date=$Date Time=$Time];
+:if ([:len $SAVESESSIONSFILE]=0) do={:set $SAVESESSIONSFILE [($OSAMA->("NUM2FILENAME")) N=$TimeS S1=("-")];:set $SAVESESSIONSFILELAST $Time;};
+:do {:if ($SAVESESSIONSFILELAST<$Time) do={:set $SAVESESSIONSFILE [($OSAMA->("NUM2FILENAME")) N=$TimeS S1=("-")];};} on-error={};
+:set $SAVESESSIONSFILELAST $Time;
+:local TT ($SAVESESSIONSFILE.("-").[:pick $Time 0 2].("-").[:pick $Time 3 5]);
+:execute {  
+:global OSAMA;:global OACTIVES;:global IACTIVES;:global FILES;:global ACTSESSIONS;:global SAVESESSIONS;:global SAVESESSIONSALL;:global SAVESESSIONSFILE;:global SAVESESSIONSFILELAST;
+:local Date [/sys cl get date];
+:local Time [:tostr [/sys cl get time]];
+:local TimeS [($OSAMA->("TIMESTAMP")) Date=$Date Time=$Time];
+:if ([:len $SAVESESSIONSFILE]=0) do={:set $SAVESESSIONSFILE [($OSAMA->("NUM2FILENAME")) N=$TimeS S1=("-")];:set $SAVESESSIONSFILELAST $Time;};
+:do {:if ($SAVESESSIONSFILELAST<$Time) do={:set $SAVESESSIONSFILE [($OSAMA->("NUM2FILENAME")) N=$TimeS S1=("-")];};} on-error={};
+:set $SAVESESSIONSFILELAST $Time;
+:local TT ($SAVESESSIONSFILE.("-").[:pick $Time 0 2].("-").[:pick $Time 3 5]);
+:put (":global SAVESESSIONSALL;:if ([:len \$SAVESESSIONSALL]=0) do={:set \$SAVESESSIONSALL [:toarray \"\"];};");
+:if ([:len $ACTSESSIONS]=0) do={:set $ACTSESSIONS [:toarray ""];};
+:if ([:len $SAVESESSIONS]=0) do={:set $SAVESESSIONS [:toarray ""];};
+:set $OACTIVES [:toarray ""];
+:local fId [/ip hot act find [:local tt ([:len $"session-time-left"]>0);:local bb ([:len $"limit-bytes-total"] > 0);:local lut 00:00:00;:local rut 00:00:00;:local bt ($"bytes-in"+$"bytes-out"+0);:local lbt 0;:local rbt 0;:local La ($OACTIVES->("$user"));:if ($tt) do={:set $lut (($"session-time-left") + $uptime);:set $rut (($"session-time-left")+00:00:00);};:if ($bb) do={:set $lbt (($"limit-bytes-total")+0);:set $rbt (($"limit-bytes-total") - $bt + 0);};:local a ({"u"=("$user");"i"=($".id");"r"=$radius;"m"=$"mac-address";"a"=$address;"adv"=$advertisement;"d"=$domain;"s"=$server;"by"=$"login-by";"stl"=$"session-time-left";"ut"=$uptime;"lut"=$lut;"rut"=$rut;"lbt"=$lbt;"lbo"=$"limit-bytes-out";"lbi"=$"limit-bytes-in";"bt"=$bt;"bo"=$"bytes-out";"bi"=$"bytes-in";"rbt"=$rbt});:local i [:len $La];:if ($i=0) do={:set ($OACTIVES->("$user")) [:toarray ""];};:set ($OACTIVES->("$user")->$i) $a;(1)]];
+:foreach i,v in=$OACTIVES do={
+:local rut 00:00:00;:local lut 00:00:00;:local ut 00:00:00;:local rbt 0;:local lbt 0;:local bt 0;:local uss;:local id;:set $id;:set $uss;:local usm;
+:foreach u,a in=$v do={
+:set $uss ($a->("u"));:local mm ($a->("m"));:local aa [:tostr ($a->("i"))];:local utss ($a->("ut"));:local aaa ($a->("a"));:set $id ($id,($a->("i")));
+:local fid [:find $IACTIVES ($a->("i"))];:if ([:len $fid]>0) do={:set ($IACTIVES->($fid+0));};
+:if (($a->("lut"))>00:00:00) do={
+    :set $ut (($a->("ut"))+$ut);
+    :if (($a->("lut"))<$lut || $lut = 00:00:00) do={:set $lut ($a->("lut"));};
+    :set $rut ($lut - $ut);
+};
+:if (($a->("lbt"))>0) do={
+    :set $bt (($a->("bt"))+$bt);
+    :if (($a->("lbt"))<$lbt || $lbt = 0) do={:set $lbt ($a->("lbt"));};
+    :set $rbt ($lbt - $bt);
+};
+:set $usm ($usm,$mm,$bt,$ut);
+};
+:local usi [:len $v];
+:put (":if ([:len (\$SAVESESSIONSALL->(\"$uss\"))]=0) do={:set (\$SAVESESSIONSALL->(\"$uss\")) [:toarray \"\"];};");
+:put (":set (\$SAVESESSIONSALL->(\"$uss\")->(\"$TimeS\")) ($rbt,$rut,$usi,$usm);");
+:if (($lbt<$bt && $rbt<0)) do={/ip hot act remove [find user=$uss];};
+:if (($lut<$ut && $rut<00:00:01)) do={/ip hot act remove [find user=$uss];};
+};
+:set $IACTIVES $fId;
+:return ("");
+} file=("SESSIONS/$TT");
+:local Day [($OSAMA->("NUM2DAY")) N=$TimeS];
+:local FA;/file find [:if ($name~"SESSIONS/$SAVESESSIONSFILE-.*\\.txt") do={:set $FA ($FA,$name);}];
+:foreach i in=$FA do={
+:do {/import ($i);} on-error={};
+}
+:execute {
+:global SAVESESSIONSALL;:global SAVESESSIONSFILE;
+:put (":global SAVESESSIONSALLDAY;:if ([:len \$SAVESESSIONSALLDAY]=0) do={:set \$SAVESESSIONSALLDAY [:toarray \"\"];};");
+:put (":if ([:len (\$SAVESESSIONSALLDAY->(\"$SAVESESSIONSALLDAY\"))]=0) do={:set (\$SAVESESSIONSALLDAY->(\"$SAVESESSIONSFILE\")) [:toarray \"\"];};");
+:foreach n1,v1 in=$SAVESESSIONSALL do={
+:local uu $n1;
+:local m 0;
+:local h 0;
+:local n 0;
+:foreach n2,v2 in=$v1 do={
+:set $m  ($v2->0);
+:set $h  ($v2->1);
+:set $n  ($v2->2);
+};
+:put (":set (\$SAVESESSIONSALLDAY->(\"$SAVESESSIONSFILE\")->(\"$uu\")) ($m,$h,$n);");
+}
+} file=("SESSIONS/$SAVESESSIONSFILE");
+:return $ACTSESSIONS;
+};
+:global OSAMANEWACTSESSIONS;:set $OSAMANEWACTSESSIONS do={
+:global OACTIVESSETS;:if ([:typeof $OACTIVESSETS]!="array") do={:set $OACTIVESSETS [:toarray ""];};:local OACTIVES [:toarray ""];:set ($OACTIVES->("true")) [:toarray ""];:set ($OACTIVES->("false")) [:toarray ""];:local fId [/ip hot act find [:local R [:tostr $radius];:local i [:len ($OACTIVES->("$R")->("$user"))];:if ($i=0) do={:set ($OACTIVES->("$R")->("$user")) [:toarray ""];};:set ($OACTIVES->("$R")->("$user")->$i) ({"u"=("$user");"i"=$".id";"m"=$"mac-address";"a"=$address;"d"=$domain;"s"=$server;"by"=$"login-by";"stl"=$"session-time-left";"ut"=$uptime;"lbo"=$"limit-bytes-out";"lbi"=$"limit-bytes-in";"bo"=$"bytes-out";"bi"=$"bytes-in"});(1)]];
+:local m 0;:local t 00:00:00;:local ALLM 0;:local ALLT 00:00:00;:local kick;
+:local US [:toarray ""];
+:local USK [:toarray ""];
+/ip hotspot user find [:if (dynamic=no) do={
+:local rm 0;:local rt 00:00:00;:local sm (true);:local st (true);
+:local ut (($uptime,00:00:00)->0);
+:local FOUNDINAC ([:len ($OACTIVES->("false")->("$name"))]>0);
+:if (($FOUNDINAC) || ($ut > 00:00:00)) do={
+:local lut (($"limit-uptime",00:00:00)->0);
+:local bo (($"bytes-out",0)->0);
+:local bi (($"bytes-in",0)->0);
+:local lbo (($"limit-bytes-out",0)->0);
+:local lbi (($"limit-bytes-in",0)->0);
+:local lbt (($"limit-bytes-total",0)->0);
+:local slbt $lbt;:local slut $lut;
+:if ($lut < 00:00:01) do={:set $rt 00:00:00;:set $st (false);:set $slut 0;} else={:set $rt ($lut - $ut);:set $st (true);:if ($rt <= 00:00:00) do={:set $rt 00:00:01;}}
+:if ($lbt <= 0) do={:set $rm 0;:set $sm (false);:set $slbt 0;} else={:set $rm ($lbt - $bi - $bo);:set $sm (true);:if ($rm <= 0) do={:set $rm 2;}}
+:if ($FOUNDINAC) do={:foreach n,a in=($OACTIVES->("false")->("$name")) do={
+:local iDD ([:tostr ($a->("i"))].("-").$name);
+:local bi2 ((($a->("bi")),0)->0);
+:local bo2 ((($a->("bo")),0)->0);
+:local ut2 ((($a->("ut")),00:00:00)->0);
+:if ([:len ($OACTIVESSETS->("$iDD"))]=0) do={:set ($OACTIVESSETS->("$iDD")) [:toarray ""];:set ($OACTIVESSETS->("$iDD")->("ut")) $ut2;:set ($OACTIVESSETS->("$iDD")->("bi")) $bi2;:set ($OACTIVESSETS->("$iDD")->("bo")) $bo2;} else={
+:local lstut ((($OACTIVESSETS->("$iDD")->("ut")),00:00:00)->0);
+:local lsbo ((($OACTIVESSETS->("$iDD")->("bo")),0)->0);
+:local lsbi ((($OACTIVESSETS->("$iDD")->("bi")),0)->0);
+:set $lstut ($ut2 - $lstut);
+:set $lsbo ($bi2 - $lsbi);
+:set $lsbi ($bo2 - $lsbo);
+:set ($OACTIVESSETS->("$iDD")->("ut")) $ut2;
+:set ($OACTIVESSETS->("$iDD")->("bi")) $bi2;
+:set ($OACTIVESSETS->("$iDD")->("bo")) $bo2;
+:set $ut2 $lstut;
+:set $bo2 $lsbo;
+:set $bi2 $lsbi;
+};
+:set $rt ($rt - $ut2);:set $rm ($rm - $bo2 - $bi2);
+:if ($st) do={:if ($rt <= 00:00:00) do={:set $rt 00:00:01;:set ($USK->("$name")) (($USK->("$name")),($a->("i")));:set $slut $rt;} else={:set $slut $rt;}} else={:set $slut 0;};
+:if ($sm) do={:if ($rm <= 0) do={:set $rm 2;:set ($USK->("$name")) (($USK->("$name")),($a->("i")));:set $slbt $rm;} else={:set $slbt $rm;}} else={:set $slbt 0;};
+:set $ALLM ($ALLM+($bo2+$bi2));
+:set $ALLT ($ALLT+$ut2);:set $lstut ($lstut+$ut2);:set $lsbt ($lsbt+$bo2+$bi2);
+};} else={
+:if ($st) do={:if ($rt <= 00:00:00) do={:set $rt 00:00:01;:set $slut $rt;} else={:set $slut $rt;}} else={:set $slut 0;};
+:if ($sm) do={:if ($rm <= 0) do={:set $rm 2;:set $slbt $rm;} else={:set $slbt $rm;}} else={:set $slbt 0;};
+};
+:set ($US->("$name")) $".id";
+set $".id" limit-uptime=$slut limit-bytes-total=$slbt;
+reset-counters $".id";
+}} else={ }];
+:foreach n,i in=$USK do={:do {/ip hot act remove $i;} on-error={};:delay 100ms;:do {/ip hotspot user reset-counters ($US->("$n"));} on-error={};};
+:return ($ALLM,$ALLT);
+}
+:global OSAMACHECKQUE;:set $OSAMACHECKQUE do={
+:global OSAMA;:global SPEEDS;
+:global GETSPEEDS;
+:global GETACTIVE;
+:global GETACTIVESPD;
+:global SPEEDLIST;
+:global LSTSPEED;
+:global GETQUEQES;
+:local AQN;:local DY [:toarray ""];:local REM [:toarray ""];
+:local H [:toarray ""];:local Q [:toarray ""];:do {/ip hotspot active find [:local a [:tostr $address];:set ($H->("$a"."/32")) ("1");:set ($Q->("$user")) ({"M"=$"mac-address";"A"=("$a")})];} on-error={ };:local D [:toarray ""];:do {/que sim find [:local T [:tostr $target];:if ([:len ($D->("$T"))]>0||([:len ($H->("$T"))]=0 && "$T"=("$name"."/32"))) do={:do {remove $".id";} on-error={ } } else={:set ($D->("$T")) $".id";};];} on-error={};
+:do {/que sim add max-limit=500M/500M name=FIRST target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6;} on-error={ };
+:do {/que sim add max-limit=500M/500M name=FAST  target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6 place-before=FIRST;} on-error={ };
+:do {/que sim move ("FIRST") [get ([find]->0) name];} on-error={ };
+:do {/que sim move ("FAST") ("FIRST") } on-error={ };
+:do {/que sim find [:local T [:tostr $target];:if (dynamic=yes) do={:if (name~"^(hs-)[<]") do={:do {remove $".id";} on-error={ } } else={:if (name~"^[<](hotspot-)") do={:set ($DY->("$T")) $".id";}}} else={ } ]} on-error={}
+# :local AC [$GETACTIVESPD ];
+:foreach u,v in=$Q do={
+:local U ("$u");
+:local A ($v->("A"));
+:local M ($v->("M"));:local UM ($U.(",").$M);:local UMA ($UM.",$A");
+:local SP  ($SPEEDS->("$U"));
+:if ([:len ($SP->("SPN"))]>0) do={
+:local X    ((($LSTSPEED->("$U")->("X")),($SP->("X")),($SP->("SP")),($SP->("SD")),0)->0);
+:local At ($A.("/32"));
+:local SQ   ($SP->("SPD")->($X+0));
+:if ([:len $SQ]=0) do={:set $X ($SP->("SD"));:set $SQ ($SP->("SPD")->($X+0));};
+:local SN   ($U."=".($SP->("PR")).($SP->("SPN")->($X+0)));
+:local QT   ($SP->("SPT")->($X+0));
+:local SPQ  ($SP->("SPQ")->($X+0));
+:local SPP  ($SP->("SPP")->($X+0));
+:local QL   ($SP->("SPL")->($X+0));
+:local SN   $U;
+:local QSN  ("$A");
+:local T  ($A."/32");
+:if ([:len $SPP]=0) do={:set $SPP ("none");};
+:if ([:len $QT]=0) do={:set $QT ("default-small/default-small");};
+:if ([:len $SQ]>0&&[:len $QL]=0) do={
+:do {:set $ID [/queue simple add name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN") place-before=("FIRST");];} on-error={ };
+:do {:set $ID [/queue simple add name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN")];} on-error={ };
+:if ([:len ($DY->("$T"))]>0) do={:do {[/queue simple remove ($DY->("$T"))];} on-error={ };}
+};};};
+:do {/queue simple move ("FAST") [:local a [get 0 name];:if (("FAST")=$a) do={:set $a [get ([find]->0) name];};$a];} on-error={ };
+};
+:global ADDFAST;:set $ADDFAST do={
+:do {/que sim add max-limit=500M/500M name=FIRST  target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6 place-before=[get 0 name];} on-error={};
+:do {/que sim add max-limit=500M/500M name=FAST  target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6 place-before=[get 0 name];} on-error={};
+:do {/que sim move ("FIRST") [get ([find]->0) name];} on-error={ };
+:do {/que sim move ("FAST") ("FIRST") } on-error={ };
+}
+:global PROFILEONLOGIN;:set $PROFILEONLOGIN do={
+:global SPEEDS;:global OSAMA;:global ONLOGINU;:global SPEEDSFIX;:global SERVERUPTIME;:global ADDQULOGIN;:global SPEEDFORALL;:local ADDQU;:global LSTSPEED;:global FIRESTSEEN;:global ALLUSERSID;
+:if ([:len $u]=0) do={:return (false);};
+:if ([:len $a]=0) do={/log info "error in login no address";:return (false);};
+:local U [:tostr $u];:local A [:tostr ("$a")];:local M [:tostr $m];
+:local UM  ($U.(",").$M);:local UMA ($U.(",").$M.(",").$A);
+:if ([:len $ONLOGINU]=0) do={:set $ONLOGINU  [:toarray ""];};
+:if ([:len ($ONLOGINU->("UM"))]=0) do={:set $ONLOGINU  [:toarray ""];:set ($ONLOGINU->("UM")) [:toarray ""];:set ($ONLOGINU->("UMA")) [:toarray ""];};
+:if (($ONLOGINU->("UM")->0)=$UM && ($ONLOGINU->("UMA")->0)!=$UMA) do={
+:if (($ONLOGINU->("UM")->1)=$UM && ($ONLOGINU->("UMA")->1)=$UMA) do={
+:execute script={:local AC [:toarray ""];:local AD [:toarray ""];:local AFF [:toarray ""];/ip hotspot profile find [:local LB ($"login-by");:local F [:find $"login-by" ("mac-cookie")];:local F2 [:find $"login-by" ("mac")];:if ([:len $F]>0||[:len $F2]>0) do={:set ($AD->[:len $AD]) $".id";:set $LB;:set ($AFF->[:len $AFF]) ($"login-by");:foreach i in=$"login-by" do={:if ($i!="mac-cookie") do={:if ($i!="mac") do={:set $LB ($LB,$i);};};};:set ($AC->[:len $AC]) ($LB,"mac-cookie");/ip hotspot profile set $".id" login-by=$LB;};];:delay 20s;:foreach n,i in=$AD do={/ip hotspot profile set ($AD->$n) login-by=($AFF->$n);}};
+};};
+:set ($ONLOGINU->("UM"))  ($UM,[:pick ($ONLOGINU->("UM")) 0 10]);
+:set ($ONLOGINU->("UMA")) ($UMA,[:pick ($ONLOGINU->("UMA")) 0 10]);
+:if ([:len $s]=0) do={:set $s $SPEEDFORALL;};
+:if ([:len $SPEEDS]=0) do={:set $SPEEDS [:toarray ""];};
+:if ([:len ($SPEEDS->("$UMA"))]=0) do={:set ($SPEEDS->("$UMA")) [:toarray ""];};
+:if ([:len ($SPEEDS->("$UM"))]=0) do={:set ($SPEEDS->("$UM")) [:toarray ""];};
+:if ([:len ($SPEEDS->("$U"))]=0) do={:set ($SPEEDS->("$U")) [:toarray ""];};
+:set ($SPEEDS->("$A")) [:toarray ""];
+:set ($SPEEDS->("$M")) [:toarray ""];
+:set ($SPEEDS->("$M")->("A")) ("$A");
+:set ($SPEEDS->("$A")->("U")) ("$U");
+:set ($SPEEDS->("$A")->("M")) ("$M");
+:if ([:len ($LSTSPEED->("$U"))]=0) do={:set ($LSTSPEED->("$U")) [:toarray ""];:delay 1s;};
+:local SP [$SPEEDSFIX $s ];
+:local X   ($LSTSPEED->("$U")->("X"));
+:local UPD ($LSTSPEED->("$U")->("UPD"));
+:local PR  ((($SPEEDS->("$U")->("PR")),($SPEEDS->("$UM")->("PR")),($SP->("PR")))->0);
+:if ([:len $X]=0) do={:set $X ($SPEEDS->("$UM")->("X"));:if ([:len $X]=0) do={:set $X ($SPEEDS->("$U")->("X"));:if ([:len $X]=0) do={:set $X ($SP->("SD"));:if ([:len $X]=0) do={:set $X 0;};};};};
+:if ([:len $UPD]=0) do={:set $UPD ($LSTSPEED->("$U")->("UPD"));:if ([:len $UPD]=0) do={:set $UPD ($SPEEDS->("$U")->("UPD"));:if ([:len $UPD]=0) do={:set $UPD ($SP->("UPD"));:if ([:len $UPD]=0) do={:set $UPD 0;};};};};
+:if ([:typeof $X]!="num") do={:set $X [:tonum ("$X")];};
+:if ([:len ($SP->("SPN")->$X)]=0) do={:set $X ($SP->("SD"));:if ([:typeof $X]!="num") do={:set $X [:tonum ("$X")];};:if ([:len $X]=0) do={:set $X 0;}};
+:set ($SPEEDS->("$U")) $SP;
+:set ($SPEEDS->("$U")->("X")) $X;
+:set ($SPEEDS->("$U")->("UPD")) $UPD;
+:if ([:len $ADDQULOGIN]=0) do={:set $ADDQULOGIN  [:toarray ""];};
+:local SPO ({"A"=$A;"U"=$U;"M"=$M;"UMA"=$UMA;"UM"=$UM;"X"=$X;"UPD"=$UPD});
+:local SQ   ($SP->("SPD")->($X+0));
+:if ([:len ($SP->("SPN")->$X)]=0) do={:set $X ($SP->("SD"));:if ([:typeof $X]!="num") do={:set $X [:tonum ("$X")];};:if ([:len $X]=0) do={:set $X 0;}};
+:if ([:len $SQ]=0) do={:set $X ($SP->("SD"));:set $SQ ($SP->("SPD")->($X+0));:if ([:len $SQ]=0) do={:set $X 0;:set $SQ ($SP->("SPD")->0);:if ([:len $SQ]=0) do={:set $X 0;:set $SQ ("1M");};};};
+:local SN   ($U."-".$PR.($SP->("SPN")->($X+0)));
+:local QSN  ("$A");
+:local QT   ($SP->("SPT")->($X+0));
+:local SPQ  ($SP->("SPQ")->($X+0));
+:local SPP  ($SP->("SPP")->($X+0));
+:local QL   ($SP->("SPL")->($X+0));
+:local ID;
+:if ([:len $SPP]=0) do={:set $SPP ("none");};
+:if ([:len $QT]=0) do={:set $QT ("default-small/default-small");};
+:if ([:len $QL]>1) do={ 
+  :do {[/ip fir address-list remove ("$A")]} on-error={ };
+  :do {[/ip fir address-list add address=$A list="$SQ" comment=("$A") timeout=1d00:00:00;]} on-error={};
+} else={
+  :do {[/ip fir address-list remove ("$A")]} on-error={ };
+};
+:do {:set $ID [/queue simple add name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN") place-before=("FIRST");];} on-error={ };
+:if ([:len $ID]=0) do={:do {:set $ID [/queue simple add name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN")];} on-error={ };};
+:if ([:len $ID]=0) do={ 
+  :do {[/queue simple find [:if (target=($A.("/32")) || target=$A || name="$QSN") do={:do {remove $".id";} on-error={}};];];} on-error={ };
+  :delay 100ms;
+  :do {:set $ID [/queue simple add name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN")];} on-error={ };
+} else={};
+:do {:delay 550ms;[/queue simple remove ("<hotspot-".$U.">")];} on-error={ };
+:if ("$UPD"="1") do={:do {[/ip fir address-list add address=$A list="StopUpdate" comment=("StopUpdate-$A") timeout=1d00:00:00];} on-error={ };} else={:do {[/ip fir address-list remove ("StopUpdate-$A")]} on-error={ };}
+:set ($SPEEDS->("$UM")->("SPD")) ($SP->("SPD"));
+:set ($SPEEDS->("$UM")->("SPN")) ($SP->("SPN"));
+:set ($SPEEDS->("$UM")->("SP")) ($SP->("SP"));
+:set ($SPEEDS->("$UM")->("X")) $X;
+# :do {:delay 50ms;/queue simple move ("FAST") ("FIRST");} on-error={ };
+:global KHADAMAT;:global ROUTER;:global FIRESTSEEN;
+:if ([:len ($PR . ($SP->("PR")))]=0) do={:set $PR ([($ROUTER->("GETPROFILE")) User=$U]->("name"));:set ($SP->("PR")) $PR;};
+:set ($SPEEDS->("$U")->("PR")) $PR;
+:set ($SPEEDS->("$UM")->("PR")) $PR;
+:if ([:len ($FIRESTSEEN->("$U"))]=0) do={
+:if ([:typeof ($SPEEDS->("$U")->("STATUS"))]!="array") do={:set ($SPEEDS->("$U")->("STATUS")) [:toarray ""];};
+:if ([:len [:tonum ($SP->("DAYS"))]]>0) do={:if (($SP->("DAYS"))>(($FIRESTSEEN->("MAXDAYS"))+0)) do={:set ($FIRESTSEEN->("MAXDAYS")) ($SP->("DAYS"));};:set ($SPEEDS->("$UM")->("DAYS")) ($SP->("DAYS"));:local DD ;:do {:set $DD [/ip firewall address-list get ("FIRESTSEEN.$U")];} on-error={:do {:set $DD [/ip firewall address-list get [/ip fir address-list add list=("FIRESTSEEN") address=[($OSAMA->("DATE2NUM")) N=((($SP->("DAYS"))*60*60*24)+60)] comment=("FIRESTSEEN.$U") disabled=yes]];} on-error={};};:set ($FIRESTSEEN->("$U")) ([:pick ($DD->"creation-time") 0 11].("\C7\E1\EC").[:pick [($OSAMA->("NUM2DATE")) N=($DD->"address")] 0 11]);:set ($SPEEDS->("$U")->("STATUS")->("days")) (("\C7\E1\D5\E1\C7\CD\ED\C9 \E3\E4"),($FIRESTSEEN->("$U")));};
+:do {:if (($KHADAMAT->("LOAN"))="1"&&($SP->("LOAN"))="1"&&!(($SP->("PR"))~("(loan|fr|sahar)"))) do={:local z [($ROUTER->("LOAN")) U=$U A=$A M=$M PR=($SP->("PR"))];};} on-error={};
+:do {:if (($KHADAMAT->("COLLECT"))="1"&&($SP->("COLLECT"))="1") do={:set ($SPEEDS->("$U")) [($ROUTER->("COLLECT")) U=$U A=$A PR=($SP->("PR")) M=$M SP=$SP];};} on-error={}
+:do {:if (($KHADAMAT->("SAHRA"))="1"&&($SP->("SAHRA"))="1") do={:local z [($ROUTER->("SAHRA")) U=$U A=$A M=$M PR=($SP->("PR"))];};} on-error={};
+:do {:if (($KHADAMAT->("FRIDAY"))="1"&&($SP->("FRIDAY"))="1") do={:local z [($ROUTER->("FRIDAY")) U=$U A=$A M=$M PR=($SP->("PR"))];};} on-error={};
+};
+:set ($SPEEDS->("$UM")->("STATUS")) ($SP->("STATUS"));
+:return ("");
+};
+:global PROFILEONLOGOUT;:set $PROFILEONLOGOUT do={
+:if ("$c"~"roaming" && (($uts+0)<10) ) do={/ip hotspot active find [:if (mac-address="$m" && user="$u") do={remove $".id"}];};
+:do {/ip firewall address-list remove ("StopUpdate-$a")} on-error={};
+:do {/queue simple remove ("$a") } on-error={};
+}
+:global PROFILEONLOGINLOAN;:set $PROFILEONLOGINLOAN do={
+:global SPEEDS;:global OSAMA;:global ONLOGINU;:global SPEEDSFIX;:global SERVERUPTIME;:global ADDQULOGIN;:global SPEEDFORALL;:local ADDQU;:global LSTSPEED;:global FIRESTSEEN;:global ALLUSERSID;
+:if ([:len $u]=0) do={:return (false);};
+:if ([:len $a]=0) do={/log info "error in login no address";:return (false);};
+:local U [:tostr $u];:local A [:tostr ("$a")];:local M [:tostr $m];
+:local UM  ($U.(",").$M);:local UMA ($U.(",").$M.(",").$A);
+:delay 1s;
+:global KHADAMAT;:global ROUTER;:global COLLECT;
+:if (($KHADAMAT->"LOAN")="1") do={
+:local I 0;
+:foreach n,i in=($COLLECT->("$M")) do={:set $I ($I+$i);};
+:if ([:len ($COLLECT->("$M"))]<1) do={:return ("");}  
+:do {/ip hotspot user remove [find name="T-$M"];} on-error={}
+:delay 10ms;
+:do {/ip hotspot user add name="T-$M" mac-address=$M limit-uptime=01:00:00 profile="loan-users" limit-bytes-total=(200 * 1024 * 1024) comment=[($OSAMA->("TIMESTAMP")) ];} on-error={ };
+:do {/ip hotspot active remove  [find name="T-$M"];} on-error={ };
+:delay 10ms;
+:do {/ip hotspot active login ip=$A mac-address=$M user="T-$M" password=""} on-error={ };
+:return true;
+}
+:return false;
+}
+# :if ([:len [/system script job find where script=("IMPORTSERVER")] ]!=1) do={
+# :execute {:do {/import (\"SERVER\2F\4F.\53.\41.\3F");} on-error={ };};
+# :if ([:len $SPEEDS]=0) do={:set $SPEEDS [:toarray ""];};
+# :if ([:typeof $LSTSPEED]!="array") do={:set $LSTSPEED [:toarray ""];:do {:set $LSTSPEED [($OSAMA->("LOAD/SCRIPT"))  Table=("LSTSPEED") ];} on-error={[($OSAMA->("SAVE/SCRIPT")) OPTION=("OLD") Table=("LSTSPEED") Array=$LSTSPEED];};};
+# :if ([:typeof $LSTSPEED]!="array") do={:set $LSTSPEED [:toarray ""];};
+# :delay 10s;
+# # };
+:global QUEUEFUN;:set $QUEUEFUN do={
+:global ADDQU;:global SPEEDS;:global ADDQULOGIN;
+:do {/que sim add max-limit=500M/500M name=FIRST target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6;} on-error={ };
+:do {/que sim add max-limit=500M/500M name=FAST  target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6 place-before=FIRST;} on-error={ };
+:do {/que sim move ("FIRST") [get ([find]->0) name];} on-error={ };
+:do {/que sim move ("FAST") ("FIRST") } on-error={ };
+:local AQN;:local DY [:toarray ""];:local MOV;:local RMOV;
+:do {/que sim find [:if (dynamic=yes) do={:if (name~"^(hs-)[<]") do={:do {remove $".id";} on-error={}} else={:if (name~"^[<](hotspot-)") do={:set ($DY->("$name")) $".id"}}} else={:set $AQN ($AQN,$name);}];} on-error={ };
+:foreach a,v in=$ADDQULOGIN do={
+:set ($ADDQULOGIN->("$a"));
+:do {
+:local U ($v->("U"));
+:local A [:tostr ($v->("A"))];
+:local UMA ($v->("UMA"));
+:local UM ($v->("UM"));
+:local SP ($v,($SPEEDS->("$U")),($SPEEDS->("$UM")));
+:local X ($v->("X"));
+:if ([:len (($DY->("<hotspot-$U>")).($DY->("<hotspot-$U-1>")).($DY->("<hotspot-$U-2>"))) ]>0) do={ :do {/que sim remove (($DY->("<hotspot-$U>")),($DY->("<hotspot-$U-1>")),($DY->("<hotspot-$U-2>")))} on-error={};};
+:local SQ   ($SP->("SPD")->($X+0));
+:if ([:len ($SP->("SPN")->$X)]=0) do={:set $X ($SP->("SD"));:if ([:typeof $X]!="num") do={:set $X [:tonum ("$X")];};:if ([:len $X]=0) do={:set $X 0;}};
+:if ([:len $SQ]=0) do={:set $X ($SP->("SD"));:set $SQ ($SP->("SPD")->($X+0));};
+:local SN   ($U."=".($SP->("PR")).($SP->("SPN")->($X+0)));
+:local QSN  $A;
+:local QT   ($SP->("SPT")->($X+0));
+:local SPQ  ($SP->("SPQ")->($X+0));
+:local SPP  ($SP->("SPP")->($X+0));
+:local QL   ($SP->("SPL")->($X+0));
+:if ([:len $SPP]=0) do={:set $SPP ("none");};
+:if ([:len $QT]=0) do={:set $QT ("default-small/default-small");};
+:if ([:len [:find $AQN $SPP]]=0) do={:set $SPP ("none");};
+:local ID;
+:do {:set $ID [/queue simple add name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN") place-before=("FIRST");];} on-error={ };
+:if ([:len $ID]=0) do={ 
+  :do {[/queue simple find [:if (target=($A.("/32")) || target=$A || name="$QSN") do={:do {remove $".id";} on-error={}};];];} on-error={ };
+  :delay 1s;
+  :do {:set $ID [/queue simple add name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN") place-before=("FIRST");];} on-error={ };
+};
+:if ([:len $ID]>0) do={:set ($SPEEDS->("$UMA")->("QID")) $ID;};
+:set $MOV ($MOV,$ID);
+} on-error={ };
+};
+:do {[/que sim move $MOV [get ([find ]->0) name]];} on-error={ };
+:do {[/que sim move ("FAST") [get ([find ]->0) name]];} on-error={ };
+:return ("");
+};
+:global FIXSMP;:set $FIXSMP do={
+:global FIXSMP;:local SPD ("$1");:local L [:len $SPD];:if ($L=0) do={:return ("0K");};:if (("$SPD")~("^[0-9]{1,10}[BKMGT]\$")) do={:return $SPD;};:if (("$SPD")~("^[0-9]{1,10}[bkmgt]\$")) do={:foreach n,v in=({"b"="B";"k"="K";"m"="M";"g"="G";"t"="T"}) do={:local f [:find $SPD $n];:if ([:len $f]>0) do={:set $SPD ([:pick $SPD 0 $f].$v.[:pick $SPD ($f+1) [:len $SPD]]);};};:return $SPD;};:if (("$SPD")~("^[0-9]{4,17}\$")) do={:return $SPD;};
+:return ("0K");
+};
+:global FIXSPD;:set $FIXSPD do={
+:global FIXSMP;:global FIXSPD;:local SPD [:tostr $1];:local ca ("$SPD$OPTION");
+:if ([:len ($FIXSPD->("$ca"))]>0) do={:return ($FIXSPD->("$ca"));};:local L [:len $SPD];
+:local f [:find $SPD ("/")];:local Up ("$SPD");:local Down ("$SPD");
+:if ([:len $f]>0) do={:set $Up [:pick $SPD 0 $f];:set $Down [:pick $SPD ($f+1) $L];};
+:if ("$OPTION"="arr") do={:set ($FIXSPD->("$ca")) ([$FIXSMP $Up],[$FIXSMP $Down]);:return ($FIXSPD->("$ca"));};
+:set $SPD ([$FIXSMP $Up].("/").[$FIXSMP $Down]);:set ($FIXSPD->("$ca")) $SPD;:set ($FIXSPD->($ca."_UP")) $Up;:set ($FIXSPD->($ca."_DOWN")) $Down;
+:return $SPD;
+};
+:global FIXSPQ1;:set $FIXSPQ1 do={
+:global FIXSPQ1;:local SPD [:tostr $1];:local Out 0;
+:local ca ("$SPD");:if ([:len ($FIXSPQ1->("$ca"))]>0) do={:return ($FIXSPQ1->("$ca"));};
+:if ($SPD~"(unlimited|Unlimited|UNLIMITED)") do={:set $SPD ("0K");};
+:local Ar ({"B"=1 ; "K"=1024; "M"=1048576; "G"=1099511627776; "T"=1125899906842624});
+:foreach n,v in=$Ar do={:local f [:find $SPD $n];:if ([:len $f]>0) do={:set $Out (([:pick $SPD 0 $f]+0)*$v);:set $SPD [:pick $SPD ($f+1) [:len $SPD]];};};
+:set ($FIXSPQ1->("$ca")) $Out;
+:return $Out;
+};
+:global FIXSPQ;:set $FIXSPQ do={
+:global FIXSPD;:global FIXSPQ1;:global FIXSPQ;
+:local SPD [:tostr $1];:local ca ("$SPD$OPTION");:if (!(("$SPD")~("^[0-9]{1,10}[BKMGT][/][0-9]{1,10}[BKMGT]\$"))) do={:set $SPD [$FIXSPD $SPD];}
+:if ([:len ($FIXSPQ->("$ca"))]>0) do={:return ($FIXSPQ->("$ca"));};:local L [:len $SPD];
+:local f [:find $SPD ("/")];:local Up ("$SPD");:local Down ("$SPD");
+:if ([:len $f]>0) do={:set $Up [:pick $SPD 0 $f];:set $Down [:pick $SPD ($f+1) $L];};
+:if ("$OPTION"="arr") do={:set ($FIXSPQ->("$ca")) ([$FIXSPQ1 $Up],[$FIXSPQ1 $Down]);:return ($FIXSPQ->("$ca"));};
+:set $SPD ([$FIXSPQ1 $Up].("/").[$FIXSPQ1 $Down]);:set ($FIXSPQ->("$ca")) $SPD;:set ($FIXSPQ->($ca."_UP")) $Up;:set ($FIXSPQ->($ca."_DOWN")) $Down;
+:return $SPD;
+};
+:global SPEEDSFIX;:set $SPEEDSFIX do={
+:global SPEEDSFIX;:global FIXSPD;:global FIXSPQ;:global CACHE;
+:local SP [:toarray ""];
+:local ca [:tostr ("SPEEDSFIX-".[:tostr $1])];:set ($SP->("SPN")) [:toarray ""];:set ($SP->("SPD")) [:toarray ""];:set ($SP->("SPT")) [:toarray ""];:set ($SP->("SPL")) [:toarray ""];
+:if ([:len ($SPEEDSFIX->("$ca"))]>0&&[:len $2]=0) do={:set $SP ($SPEEDSFIX->("$ca"));} else={
+:local I 0;
+:foreach i,v in=$1 do={  
+:if ([:typeof $i]="num") do={
+:local s ($v->("S"));
+:local n ($v->("N"));
+:local spq2 [$FIXSPD ($v->("S"))];
+:local spq [$FIXSPQ ($v->("S")) OPTION=("arr")];
+:local spsu ("0K");:local spsd ("0K");:local spqu ($spq->0);:local spqd ($spq->1);
+:if ($spqu<65536) do={:set $spqu 0;:set $spsu ("0K");} else={:set $spsu (($spqu/1024)."K");:set $spqu (($spqu/1024)*1000);};:if ($spqd<65536) do={:set $spqd 0;:set $spsd ("0K");} else={:set $spsd (($spqd/1024)."K");:set $spsd (($spqd/1024)*1000);};
+:local spd $spq2;
+:local sps ("$spsu,$spsd");
+:local spn [:tostr (($n,("\D3\D1\DA\C9 $spd"))->0)];
+:if ($spqd=0 && [:len $n]=0) do={:set $spn ("\D3\D1\DA\C9 \E3\DD\CA\E6\CD\C9 ");};
+:set ($SP->("SPN")->($I+0)) ("$spn");
+:set ($SP->("SPD")->($I+0)) $spd;
+:set ($SP->("SPT")->($I+0)) ($v->("T"));
+:set ($SP->("SPL")->($I+0)) ($v->("L"));
+:set $I ($I+1);
+:local SQ (($spd."_UP"),($spd."_DOWN"));
+:do {/queue type add kind=pcq name=($spd."_UP") pcq-classifier=src-address pcq-rate=$spqu;} on-error={ };
+:do {/queue type add kind=pcq name=($spd."_DOWN") pcq-classifier=dst-address pcq-rate=$spqd;} on-error={ };
+} else={:if ("$i"="SPD"&&[:typeof ($v->(1+0))]="array") do={:set $SP ($SP,[$SPEEDSFIX $v ("NOCASH")]);} else={:set ($SP->("$i")) $v;};};};};
+:return $SP;
+};
+:global SERVERREQUESTS;:set $SERVERREQUESTS [:toarray ""];:global SERVERREQUEST;:set $SERVERREQUEST do={
+:global OSAMA;
+:global SPEEDS;:global GETACTIVE;:global GETHOST;:global SERVERREQUEST;:global SERVERREQUESTS;:global ROUTER;
+:if ([:len $IP]=0) do={:return (" NO IP ");};
+:if ([:len $SPEEDS]=0) do={:set $SPEEDS [:toarray ""];};
+:local mm ($SPEEDS->("$IP")->("M"));
+:local RE  ($SERVERREQUESTS->("$IP"));
+:local MA [($OSAMA->("SPLIT")) S1=$RE  S2=(" ")];
+:local QUERY [($OSAMA->("QUERY")) URL=($MA->2)];
+:if (($QUERY->("X"))="-1") do={:set ($QUERY->("X"));};
+:local FN  ($QUERY->("FN"));:if ([:len $FN]=0) do={:return ("  ")};
+:local RES [:toarray ""];
+:local RET [:toarray ""];
+:local RID [:pick ($QUERY->("RID")) 0 3];
+:local M ($SPEEDS->("$IP")->("M"));:if ([:len $M]=0) do={:local HO [$GETHOST];:set $M ($HO->("$IP")->("M"));:if ([:len $M]=0) do={:return (" NOT CLIENT ");};};
+:if ([:len ($OSAMA->("FUN/$FN"))]>0) do={:do {:set $RES [($OSAMA->("FUN/$FN")) IP=("$IP") Ti=$Ti QUERY=$QUERY];} on-error={:set ($RES->("error")) ("Error in function $FN");};
+} else={:set ($RES->("error")) ("can not find function $FN");};
+:set $RET [($OSAMA->("TOJSON")) A=$RES];:local AA "";:local AB "";
+:if ($FN~"SP" && [:len $U]>0 && $U~"^[0-9A-Za-z]{1,50}\$") do={:set $AA (("\$(if username-esc == '").$U.("')"));:set $AB ("\$(endif)");};
+:local O (("{").("\$(if ip == '$IP')").("\$(if mac == '$M')").$AA.("\$(if var == '$RID')").("\"RET\":").$RET.(",").("\$(endif)\$(endif)\$(endif)".$AB).("\"RID\":\"".$RID."\",\"RTM\":\"".$Ti."\"}"));
+:return $O;
+};
+:global OSAMA;:if ([:typeof $OSAMA]!="array") do={:set $OSAMA [:toarray ""];}
+:set ($OSAMA->("FUN/")) do={
+
+};
+:set ($OSAMA->("FUN/")) do={
+:return ({"error"="no function"});
+};
+:global FIRESTUSER;:if ([:typeof $FIRESTUSER]!="array") do={:set $FIRESTUSER [:toarray ""];}
+:set ($OSAMA->("FUN/GETSPS")) do={
+:if ([:len $IP]=0) do={:return ("");};:local A ("$IP");
+:delay 100ms;
+:global LISTIDS;:global CACHE;:global QUEUESID;:global LSTSPEED;:global FIRESTUSER;:global KHADAMATFN;:global ADDQU;:global ROUTER;
+:global OSAMA;:global SPEEDS;:global QUEUEFUN;:global LSTSPEED;:global KHADAMAT;:global COLLECT;
+:local A $IP;:if ([:len $SPEEDS]=0) do={:set $SPEEDS [:toarray ""];};
+:if ([:len  ($SPEEDS->("$IP"))]=0) do={:set ($SPEEDS->("$IP")) [:toarray ""];};
+:if ([:len ($SPEEDS->("$A"))]=0) do={:set ($SPEEDS->("$A")) [:toarray ""];:delay 100ms;};
+:if ([:len $M]=0||[:len $U]=0) do={/ip hot act find [:if (address=$IP) do={:set $M $"mac-address";:set $U [:tostr $user];:set ($SPEEDS->("$IP")->("M")) $M;:set ($SPEEDS->("$IP")->("U")) $U;}];};
+:local U ($SPEEDS->("$A")->("U"));
+:local M ($SPEEDS->("$A")->("M"));
+:local QSN $A;
+:local AQ [:toarray ""];
+:local SP ($SPEEDS->("$U"));
+:local X ($QUERY->("X"));
+:if ([:len ($COLLECT->("PRIZE")->("$M"))]>0) do={:set $SP ($SP+($COLLECT->("PRIZE")->("$M")));}
+:if ([:len ($LSTSPEED->("$U"))]>0) do={:set $SP ($SP,($LSTSPEED->("$U")));};
+:do {:set ($SP->("UPD")) ([:len [/ip fir address-list get ("StopUpdate-$A")]]>1)} on-error={};
+:do {
+:if ([:len ($SP->("STATUS")->("days")->1)]<2) do={
+:if ([:typeof ($SP->("STATUS"))]!="array") do={:set ($SP->("STATUS")) [:toarray ""];};
+:if ([:len [:tonum ($SP->("DAYS"))]]>0) do={:local DD;:do {:set $DD [/ip firewall address-list get ("FIRESTSEEN.$U")];} on-error={:do {:set $DD [/ip firewall address-list get [/ip fir address-list add list=("FIRESTSEEN") address=[($OSAMA->("DATE2NUM")) N=((($SP->("DAYS"))*60*60*24)+60)] comment=("FIRESTSEEN.$U") disabled=yes]];} on-error={};};:set ($FIRESTSEEN->("$U")) ([:pick ($DD->"creation-time") 0 11].("\C7\E1\EC").[:pick [($OSAMA->("NUM2DATE")) N=($DD->"address")] 0 11]);:set ($SP->("STATUS")->("days")) (("\C7\E1\D5\E1\C7\CD\ED\C9 \E3\E4"),($FIRESTSEEN->("$U")));} else={
+    :local PR ([($ROUTER->("GETPROFILE")) User=$U]->("name"));
+    :if (([:len ($SP->("PR"))]=0 || ($SP->("PR"))="...") && $PR~"[0-9]" && [:len $PR]<10) do={:set ($SPEEDS->("$UMA")->("PR")) $PR;:set ($SPEEDS->("$UM")->("PR")) $PR;:set ($SP->("PR")) $PR;};
+    :do {:local d [:tostr [($ROUTER->("GETUSERDAYS")) User=$U OPTION=("SET")]];:if ([:len $d]>5) do={:set ($SP->("STATUS")->("days")) (("\C7\E1\D5\E1\C7\CD\ED\C9 \E3\E4"),([:pick $d 0 [:find $d ("-")]].("\C7\E1\EC").[:pick $d ([:find $d ("-")]+1) [:len $d]]));}} on-error={ };
+  };
+};} on-error={};
+:set ($SP->("STATUS")) (($SPEEDS->("$UM")->("STATUS")),($SP->("STATUS")));
+:if ([:len ($SP->("SPN"))]=0) do={:return ({"SPN"=($SP->("SPN"));"X"=($SP->("X"));"UPD"=($SP->("UPD"));"SP"=($SP->("SP"));"KICK"=($SP->("KICK"));"STA"=($SP->("STA"));"STATUS"=($SP->("STATUS"));"SD"=($SP->("SD"));"PR"=($SP->("PR"));"STV"=($SP->("STV"));"STH"=($SP->("STH"));"STN"=($SP->("STN"))});};
+# :do {:set $AQ [/queue simple get ("$QSN")]} on-error={ };
+:set ($SP->("SP")) ((($SP->("SP")),($SP->("X")),($SP->("SD")),0)->0);
+:local sp ($SP->("SP"));
+:local X ($SP->("X"));
+# :if (($KHADAMAT->("COLLECT"))="1"&&[:len ($COLLECT->("$U"))]=0) do={:do {:local a [$KHADAMATFN IP=$IP];} on-error={}} else={};
+# :if ([:len ($AQ->"max-limit")]>0) do={:do {:local n [/que sim get 0 name];:if ($n!="FAST"&&[:len $n]>0) do={[/que sim move ("FAST") $n];};} on-error={ };:local ss [:find $SQ ($AQ->"max-limit")];:if ([:len $ss]>0 && $ss>=0) do={:set ($SP->("SP")) $ss;};};
+:return ({"SPN"=($SP->("SPN"));"X"=($SP->("X"));"UPD"=($SP->("UPD"));"SP"=($SP->("SP"));"NSP"=($SP->("NSP"));"KICK"=($SP->("KICK"));"STA"=($SP->("STA"));"STATUS"=($SP->("STATUS"));"SD"=($SP->("SD"));"PR"=($SP->("PR"));"STV"=($SP->("STV"));"STH"=($SP->("STH"));"STN"=($SP->("STN"))});
+};
+:global KHADAMATARR;:if ([:typeof $KHADAMATARR]!="array") do={:set $KHADAMATARR [:toarray ""];};
+:global KHADAMAT;:if ([:typeof $KHADAMAT]!="array") do={:set $KHADAMAT [:toarray ""];};
+:global FIRESTSEEN;:if ([:typeof $FIRESTSEEN]!="array") do={:set $FIRESTSEEN [:toarray ""];};
+:if ([:typeof ($KHADAMATARR->("USERS"))]!="array") do={:set ($KHADAMATARR->("USERS")) [:toarray ""];}
+:if ([:typeof ($KHADAMATARR->("MACS"))]!="array") do={:set ($KHADAMATARR->("MACS")) [:toarray ""];}
+:if ([:typeof ($KHADAMATARR->("HOSTNAME"))]!="array") do={:set ($KHADAMATARR->("HOSTNAME")) [:toarray ""];}
+:if ([:typeof ($KHADAMATARR->("COLLECT"))]!="array") do={:set ($KHADAMATARR->("COLLECT")) [:toarray ""];}
+:if ([:typeof ($KHADAMATARR->("FIRESTUSER"))]!="array") do={:set ($KHADAMATARR->("FIRESTUSER")) [:toarray ""];}
+:global KHADAMATFN;:set $KHADAMATFN do={
+:global KHADAMATARR;:global OSAMA;:global SPEEDS;:global CACHE;:global KHADAMAT;:global FIRESTUSER;:global COLLECT;
+:global OSAMA;:global SPEEDS;:global LISTIDS;:global CACHE;:global QUEUESID;:global LSTSPEED;:global FIRESTUSER;:global KHADAMAT;:global KHADAMATFN;:global ADDQU;:global ROUTER;:global ALLUSERSID;
+:if ([:len $IP]=0) do={:return ("");};
+:if ([:len  ($SPEEDS->("$IP"))]=0) do={:set ($SPEEDS->("$IP")) [:toarray ""];};
+:local A $IP;:local U ($SPEEDS->("$IP")->("U"));
+:local M ($SPEEDS->("$IP")->("M"));
+:if ([:len $M]=0 || [:len $U]=0) do={/ip hot act find [:if (address=$IP) do={:set $M $"mac-address";:set $U [:tostr $user];:set ($SPEEDS->("$IP")->("M")) $M;:set ($SPEEDS->("$IP")->("U")) $U;}];};
+:local UM  ($U.(",").$M);:local UMA ($U.(",").$M.(",").$IP);
+:local SP [:toarray ""];
+:local SP ($SPEEDS->("$U"));
+:set ($SP->("SP")) ($SPEEDS->("$UM")->("SP"));
+:set ($SP->("X")) ($SPEEDS->("$UM")->("X"));
+:set ($SP->("NSP")) ($SPEEDS->("$UM")->("NSP"));
+:set ($SP->("UPD")) ($SPEEDS->("$UM")->("UPD"));
+:set ($SP->("X")) ($SPEEDS->("$UM")->("X"));
+:set ($SP->("NSP")) ($SPEEDS->("$UM")->("NSP"));
+:set ($SP->("STATUS")) ($SPEEDS->("$UM")->("STATUS"));
+:set ($SP->("STA")) ($SPEEDS->("$UM")->("STA"));
+:set ($SP->("STV")) ($SPEEDS->("$UM")->("STV"));
+:set ($SP->("STN")) ($SPEEDS->("$UM")->("STN"));
+:local s ($SPEEDS->("$U"));
+:local X ($QUERY->("X"));
+:local PR ($SP->("PR"));
+:if ([:len ($FIRESTUSER->("$U"))]=0) do={:set ($FIRESTUSER->("$U")) ({"M"=$M;"DID"=[:tostr ($QUERY->("DID"))];"I"=($QUERY->("I"))});};
+:return ("");
+};
+:set ($OSAMA->("FUN/CHSP")) do={
+:global OSAMA;:global SPEEDS;:global LISTIDS;:global CACHE;:global QUEUESID;:global LSTSPEED;:global FIRESTUSER;:global KHADAMAT;:global KHADAMATFN;:global ADDQU;:global ROUTER;:global COLLECT;:global KHADAMATFN;
+:if ([:len $IP]=0) do={:return ("");};
+:if ([:len  ($SPEEDS->("$IP"))]=0) do={:set ($SPEEDS->("$IP")) [:toarray ""];};
+:local A $IP;:local U ($SPEEDS->("$IP")->("U"));:local M ($SPEEDS->("$IP")->("M"));
+/ip hot act find [:if (address=$IP) do={:set $M $"mac-address";:set $U [:tostr $user];:set ($SPEEDS->("$IP")->("M")) $M;:set ($SPEEDS->("$IP")->("U")) $U;}];
+:local UM  ($U.(",").$M);:local UMA ($U.(",").$M.(",").$IP);
+:local SP ($SPEEDS->("$U"));
+:set ($SP->("SP")) ((($SP->("SP")),($SPEEDS->("$UM")->("SP")))->0);
+:set ($SP->("UPD")) ((($SP->("UPD")),($SPEEDS->("$UM")->("UPD")))->0);
+:set ($SP->("NSP")) ((($SP->("NSP")),($SPEEDS->("$UM")->("NSP")))->0);
+:set ($SP->("X")) ((($SP->("X")),($SPEEDS->("$UM")->("X")))->0);
+:set ($SP->("STATUS")) (($SPEEDS->("$UM")->("STATUS")),($SP->("STATUS")));
+:do {
+:if ([:len ($SP->("STATUS")->("days")->1)]<2) do={
+:if ([:typeof ($SP->("STATUS"))]!="array") do={:set ($SP->("STATUS")) [:toarray ""];};
+:if ([:len ($SP->("DAYS"))]>0) do={:local DD ;:do {:set $DD [/ip firewall address-list get ("FIRESTSEEN.$U")];} on-error={:do {:set $DD [/ip firewall address-list get [/ip fir address-list add list=("FIRESTSEEN") address=[($OSAMA->("DATE2NUM")) N=((($SP->("DAYS"))*60*60*24)+60)] comment=("FIRESTSEEN.$U") disabled=yes]];} on-error={};};:set ($FIRESTSEEN->("$U")) ([:pick ($DD->"creation-time") 0 11].("\C7\E1\EC").[:pick [($OSAMA->("NUM2DATE")) N=($DD->"address")] 0 11]);:set ($SP->("STATUS")->("days")) (("\C7\E1\D5\E1\C7\CD\ED\C9 \E3\E4"),($FIRESTSEEN->("$U")));} else={
+    :local PR ([($ROUTER->("GETPROFILE")) User=$U]->("name"));
+    :if (([:len ($SP->("PR"))]=0 || ($SP->("PR"))="...") && $PR~"[0-9]" && [:len $PR]<10) do={:set ($SPEEDS->("$UMA")->("PR")) $PR;:set ($SPEEDS->("$UM")->("PR")) $PR;:set ($SP->("PR")) $PR;};
+    :do {:local d [:tostr [($ROUTER->("GETUSERDAYS")) User=$U OPTION=("SET")]];:if ([:len $d]>5) do={:set ($SP->("STATUS")->("days")) (("\C7\E1\D5\E1\C7\CD\ED\C9 \E3\E4"),([:pick $d 0 [:find $d ("-")]].("\C7\E1\EC").[:pick $d ([:find $d ("-")]+1) [:len $d]]));}} on-error={ };
+  };
+};} on-error={};
+:local X ($QUERY->("X"));
+:set ($SP->("SP")) ((($SP->("SP")),$X,($SP->("X")),($SP->("SD")),$X,0)->0);
+:local XUPD ($QUERY->("UPD"));
+:local UPD ($SP->("UPD"));
+:if ("$X"="-1" || [:len $X]=0 || "$X"="100") do={:set $X ($SP->("SP"));};:if ([:typeof $X]!="num") do={:set $X [:tonum ("$X")];};
+:if ([:len $XUPD]=0) do={:set $UPD ($SP->("UPD"));:if ([:len $UPD]=0) do={:set $UPD "0";};:set ($SP->("UPD")) $UPD;} else={:if ($UPD!=$XUPD&&$XUPD~"[01]") do={:set $UPD $XUPD;};:set ($SP->("UPD")) $UPD;};
+:local SQ ($SP->("SPD")->($X+0));
+:if ([:len ($SP->("SPN")->$X)]=0) do={:set $X ($SP->("SD"));:if ([:typeof $X]!="num") do={:set $X [:tonum ("$X")];};:if ([:len $X]=0) do={:set $X 0;}};
+:if ([:len $SQ]=0) do={:set $X ($SP->("SD"));:set $SQ ($SP->("SPD")->($X+0));};
+:if ([:len $SQ]=0&&[:len ($SP->("SPQ")->($X+0))]>0) do={:set $SQ (($SP->("SPQ")->($X+0)->0)."/".($SP->("SPQ")->($X+0)->1));};
+:if ([:len $SQ]=0) do={:set $X ($SP->("SP"));:set $SQ ($SP->("SPD")->($X+0));};:if ([:typeof $X]!="num") do={:set $X [:tonum ("$X")];};
+# :if ([:len ($SP->("SQ")->($X+0))]=0) do={:if ("$UPD"="1") do={:do {:set $SID [/ip fir address-list add address=$A list="StopUpdate" comment=("StopUpdate-$A") timeout=1d00:00:00];} on-error={ };} else={:do {[/ip fir address-list remove ("StopUpdate-$A")]} on-error={ };};:return $SP;};
+:if ([:len ($SP->("SPN"))]=0) do={:return ({"SPN"=($SP->("SPN"));"X"=($SP->("X"));"UPD"=($SP->("UPD"));"SP"=($SP->("SP"));"KICK"=($SP->("KICK"));"STA"=($SP->("STA"));"STATUS"=($SP->("STATUS"));"SD"=($SP->("SD"));"PR"=($SP->("PR"));"STV"=($SP->("STV"));"STH"=($SP->("STH"));"STN"=($SP->("STN"))});};
+:local SN   ($U."=".($SP->("PR")).($SP->("SPN")->($X+0)));
+:local QT   ($SP->("SPT")->($X+0));
+:local SPQ  ($SP->("SPQ")->($X+0));
+:local SPP  ($SP->("SPP")->($X+0));
+:local QL   ($SP->("SPL")->($X+0));
+:local ID  ($SP->("QID"));
+:local QSN  $A;
+:local Names;:local DONE (false);
+:if ([:len $SPP]=0) do={:set $SPP ("none");};
+:if ([:len $QT]=0) do={:set $QT ("default-small/default-small");};
+:if ([:len $QL]>1) do={ 
+  :do {[/ip fir address-list remove ("$A")]} on-error={ };
+  :do {[/ip fir address-list add address=$A list="$SQ" comment=("$A") timeout=1d00:00:00;]} on-error={}
+  
+} else={
+  :do {[/ip fir address-list remove ("$A")]} on-error={ };
+}
+:do {:set $ID [/queue simple add name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN") place-before=("FIRST");];} on-error={ };
+:do {:if ([:len ("$QSN")]>0) do={:set $ID ([/queue simple get ("$QSN")]->(".id"));[/queue simple set $ID name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN")];};} on-error={};
+:if ([:len $ID]=0) do={ 
+  :do {[/queue simple find [:if (target=($A.("/32")) || target=$IP || name="$QSN") do={:do {remove $".id";} on-error={}};];];} on-error={ };
+  :delay 1s;
+  :do {:set $ID [/queue simple add name=("$QSN") priority=("7/7") target=($A.("/32")) max-limit=("$SQ") queue=("$QT") parent=("$SPP") comment=("$SN");];} on-error={ };
+} else={}
+:if ([:len $SPP]>1&&$SPP!="none") do={:do {/que sim set (($ID,("$QSN"))->0) parent=$SPP;} on-error={:do {/que sim add name=("$SPP") priority=7/7 target="0.0.0.0/0" ;/que sim set (($ID,("$QSN"))->0) parent=$SPP;} on-error={ };};};
+:if ($SN=("ERROR")) do={:return ({"SPN"=($SP->("SPN"));"X"=($SP->("X"));"UPD"=($SP->("UPD"));"SP"=($SP->("SP"));"KICK"=($SP->("KICK"));"STA"=($SP->("STA"));"STATUS"=($SP->("STATUS"));"SD"=($SP->("SD"));"PR"=($SP->("PR"));"STV"=($SP->("STV"));"STH"=($SP->("STH"));"STN"=($SP->("STN"))});};
+:if ([:len $ID]=0) do={:return ({"SPN"=($SP->("SPN"));"X"=($SP->("X"));"UPD"=($SP->("UPD"));"SP"=($SP->("SP"));"KICK"=($SP->("KICK"));"STA"=($SP->("STA"));"STATUS"=($SP->("STATUS"));"SD"=($SP->("SD"));"PR"=($SP->("PR"));"STV"=($SP->("STV"));"STH"=($SP->("STH"));"STN"=($SP->("STN"))});};
+# :do {:delay 50ms;/queue simple move ("FAST") [:local a [get 0 name];:if (("FAST")=$a) do={:set $a ("$QSN");};$a];} on-error={ };
+:do {:delay 550ms;[/queue simple remove (("<hotspot-".$U.">"))]} on-error={ };
+:if ($XUPD!=($SP->("UPD"))) do={:if ("$UPD"="1") do={:do {[/ip fir address-list add address=$A list="StopUpdate" comment=("StopUpdate-$A") timeout=1d00:00:00];} on-error={ };} else={:do {[/ip fir address-list remove ("StopUpdate-$A")]} on-error={ };};};
+:set ($SP->("QID")) $ID;
+:set ($SP->("LID")) $LID;
+:set ($SP->("SID")) $SID;
+:set ($SP->("X")) $X;
+:set ($SP->("SP")) $X;
+:set ($SP->("UPD")) $UPD;
+:set ($SP->("NSP")) $X;
+:set ($SPEEDS->("$UM")) $SP;
+:set ($SPEEDS->("$UMA")) $SP;
+:set ($SPEEDS->("$U")->("X")) $X;
+:set ($SPEEDS->("$U")->("SP")) $X;
+:set ($SPEEDS->("$U")->("NSP")) $X;
+:set ($SPEEDS->("$UM")->("NSP")) $X;
+:set ($SPEEDS->("$U")->("UPD")) $UPD;
+:set ($SPEEDS->("$UM")->("UPD")) $UPD;
+:if ([:len ($LSTSPEED->("$U"))]=0) do={:set ($LSTSPEED->("$U")) [:toarray ""];};
+:if ([:len ($LSTSPEED->("$UM"))]=0) do={:set ($LSTSPEED->("$UM")) [:toarray ""];};
+:set ($LSTSPEED->("$U")->("X")) $X;:set ($LSTSPEED->("$U")->("UPD")) $UPD;:set ($LSTSPEED->("$UM")->("X")) $X;:set ($LSTSPEED->("$UM")->("UPD")) $UPD;
+:set ($LSTSPEED->("CONT")) (($LSTSPEED->("CONT"))+1);
+:if (($LSTSPEED->("CONT"))>150) do={:set ($LSTSPEED->("CONT")) 0;:execute {:do {/ip firewall address-list remove [find where comment~("LSTSPEED") && !(creation-time~[/system clock get date ])];} on-error={};:foreach n,v in=$LSTSPEED do={:do {/ip firewall address-list get ("LSTSPEED.$n");} on-error={:if ([:typeof $v]="array") do={:foreach n1,v1 in=$v do={:if ([:typeof $v1]="array") do={:foreach n2,v2 in=$v1 do={:do {/ip firewall address-list add list="LSTSPEED" address=$v2 comment=("LSTSPEED.$n.$n1.$n2") disabled=yes;} on-error={};}} else={:do {/ip firewall address-list add list="LSTSPEED" address=$v1 comment=("LSTSPEED.$n.$n1") disabled=yes;} on-error={};}}} else={:do {/ip firewall address-list add list="LSTSPEED" address=$v comment=("LSTSPEED.$n") disabled=yes;} on-error={};}}}}};
+:return ({"SPN"=($SP->("SPN"));"X"=($SP->("X"));"UPD"=$UPD;"SP"=($SP->("SP"));"NSP"=($SP->("NSP"));"KICK"=($SP->("KICK"));"STA"=($SP->("STA"));"STATUS"=($SP->("STATUS"));"SD"=($SP->("SD"));"PR"=($SP->("PR"));"STV"=($SP->("STV"));"STH"=($SP->("STH"));"STN"=($SP->("STN"))});
+};
+:global GETALLHOSTNAME;:set $GETALLHOSTNAME do={
+:global ALLHOSTNAME;:local Nil ([]);:local HN [:toarray ""];:local HH [:toarray ""];:local HM [:toarray ""];
+/ip dhcp-server lease find [:local i [:tostr $"active-address"];:local m [:tostr $"active-mac-address"];:set $h [:tostr $"host-name"];:set ($HH->("$h")) $i;:set ($HM->("$m")) $i;:set ($HN->("$m")) (($HN->("$m")),$HH);:set ($HN->("$h")) (($HN->("$h")),$HM);:set ($HN->("$i")) ({"M"=$m;"H"=$h;"I"=$".id"});(false)];
+:set $ALLHOSTNAME $HN;:return $HN;
+};
+:set ($OSAMA->("FUN/COOKIES")) do={
+:return "";
+};
+:set ($OSAMA->("FUN/KICK")) do={
+:global OSAMA;:global SPEEDS;:global FIRESTUSER;
+:if ([:len $IP]=0) do={:return ("");};
+:local U [($OSAMA->("DECODE")) S=($QUERY->("U"))];
+:if ([:len ($SPEEDS->("$IP"))]=0) do={:set ($SPEEDS->("$IP")) [:toarray ""];:local HO [:toarray ""];/ip hotspot host find [:local M [:tostr $"mac-address"];:local A [:tostr $address];:local TA [:tostr $"to-address"];:local U ($SPEEDS->("$TA")->("U"));:set ($HO->("$A")) (($HO->("$A")),$".id");:set ($HO->("$TA")) (($HO->("$TA")),$".id");:set ($HO->("$M")) (($HO->("$M")),$".id");:set ($HO->("$U")) (($HO->("$U")),$".id");:set ($SPEEDS->("$TA")->("M")) $M;:set ($SPEEDS->("$TA")->("U")) $U;];:set ($OSAMA->("IDS")->("HO")) $HO;};
+:local M ($SPEEDS->("$IP")->("M"));
+:if (!($M~ ("^[:0-9A-Fa-f]{17}\$"))) do={:set $M [/ip hotspot host get [find to-address=$IP] mac-address];};
+:if ([:len $U]=0) do={:return ("");};
+:set ($OSAMA->("FUN/KICK")->("$IP")) (("$U"),($OSAMA->("FUN/KICK")->("$IP")));
+:if ([:len $SPEEDS]=0) do={:set $SPEEDS [:toarray ""];};
+:if ([:len ($SPEEDS->("$U"))]=0) do={:set ($SPEEDS->("$U")) [:toarray ""];};
+:local UM  ($U.(",").$M);:local UMA ($UM.(",").$IP);
+:local SP ($SPEEDS->("$U"));
+:set ($SP->("SP")) ($SPEEDS->("$UM")->("SP"));
+:set ($SP->("X")) ($SPEEDS->("$UM")->("X"));
+:set ($SP->("NSP")) ($SPEEDS->("$UM")->("NSP"));
+:set ($SP->("UPD")) ($SPEEDS->("$UM")->("UPD"));
+:set ($SP->("X")) ($SPEEDS->("$UM")->("X"));
+:set ($SP->("NSP")) ($SPEEDS->("$UM")->("NSP"));
+:set ($SP->("STATUS")) ($SPEEDS->("$UM")->("STATUS"));
+:set ($SP->("STA")) ($SPEEDS->("$UM")->("STA"));
+:set ($SP->("STV")) ($SPEEDS->("$UM")->("STV"));
+:set ($SP->("STN")) ($SPEEDS->("$UM")->("STN"));
+:local V ({"SPN"=($SP->("SPN"));"X"=($SP->("X"));"UPD"=($SP->("UPD"));"SP"=($SP->("SP"));"NSP"=($SP->("NSP"));"KICK"=($SP->("KICK"));"STA"=($SP->("STA"));"STATUS"=($SP->("STATUS"));"SD"=($SP->("SD"));"PR"=($SP->("PR"));"STV"=($SP->("STV"));"STH"=($SP->("STH"));"STN"=($SP->("STN"))});
+:if ([:len $V]=0) do={:set $V [:toarray ""];};
+:if ([:len ($OSAMA->("FUN/KICK")->("$IP"))]<100) do={
+:local ID [:toarray ""];
+:do {:set $ID [/ip hot act find user=$U]; } on-error={ };
+:local H [:toarray ""];
+:if ([:len $ID]>0) do={
+:local MSGS [/log find where message=("$U ($IP): login failed: no more sessions are allowed for user") || message=("$U ($IP): login failed: simultaneous session limit reached") || message=("$U ($IP): login failed: You are already logged in - access denied")];
+:foreach i in=$MSGS do={
+    :if ([:len [:find ($OSAMA->("FUN/KICK")->("$U")) $i]]=0) do={
+        :set ($OSAMA->("FUN/KICK")->("$U")) ($i,($OSAMA->("FUN/KICK")->("$U")));
+        :local iddd ($FIRESTUSER->("$U")->("DID"));
+        :local iddd2 ($QUERY->("DID"));
+        :set $iddd [:pick $iddd 0 7];
+        :set $iddd2 [:pick $iddd2 0 7];
+        # :if ([:len $H]=0) do={:do {/ip ho ip set type=regular [find type=block comment~("^KICK_")];/ip hotspot host find [:set ($H->([:tostr $"to-address"])) $address];} on-error={ };};
+        :foreach j in=$ID do={ 
+            :local a;
+            :do {:set $a [/ip hot act get $j];} on-error={ };
+            :local ipa [:tostr ($a->"address")];
+            :local UM2  ($U.(",").($a->"mac-address"));:local UMA2 ($UM.(",").$ipa);
+            :if ("$ipa"!="$IP") do={
+                # :set ($SPEEDS->("$UMA2")) $V;
+                # :set ($SPEEDS->("$UM2")) $V;
+                :if ($M=($a->"mac-address")) do={
+                  :do {/ip hot act remove ($a->".id");} on-error={ };
+                  :do {/ip hot cookie find [:if ("$user"="$U") do={:do {remove $".id";} on-error={}}]; } on-error={ };
+                } else={
+                  :do {:if (($FIRESTUSER->("$U")->("M"))!=$M&&[:len ($FIRESTUSER->("$U")->("M"))]>7&&[:len $M]>7&&[:pick ($FIRESTUSER->("$U")->("M")) 0 8]!=[:pick $M 0 8]) do={:if ($iddd2!=$iddd&&[:len ($FIRESTUSER->("$U"))]>0&&[:len $iddd2]>0&&[:len $iddd]>0) do={:set ($V->("KICK")) 0;:set ($V->("error")) ("FIRESTUSER");:return $V;};};} on-error={};
+                  :do {/ip hot act remove ($a->".id");} on-error={ };
+                  :do {/ip hot cookie find [:if ("$user"="$U") do={:do {remove $".id";} on-error={}}]; } on-error={ };
+                #  :set ($OSAMA->("MACROAMING")->("$ipa")) ({"M"=($a->"mac-address");"U"=$U;"M1"=$M});
+                #  :execute script=("{:global OSAMA;:return [(\$OSAMA->(\"MACROAMING\")) IP=(\"$ipa\")];}");
+                }
+                /log info ("KICK User=$U by $IP");
+                :set ($V->("KICK")) 1;
+                :set ($SPEEDS->("$U")) $V;
+                :return $V
+            };
+         };
+        };
+    };
+:do {/ip hot cookie find [:if ("$user"="$U") do={:do {remove $".id";} on-error={}}]; } on-error={ };
+:set ($V->("KICK")) 1;
+:return $V;
+} else={
+:set ($V->("KICK")) 1;
+:return $V;
+}} else={
+:set ($OSAMA->("FUN/KICK")->("$IP")) [:pick ($OSAMA->("FUN/KICK")->("$IP")) 0 8];
+:set ($V->("KICK")) -1;
+:return $V;
+};
+:set ($V->("KICK")) 0;
+:return $V;
+};
+:set ($OSAMA->("FUN/STOPUP")) do={
+:global OSAMA;:global SPEEDS;:global LISTIDS;
+:if ([:len $IP]=0) do={:return ("");};
+:local U ($SPEEDS->("$IP")->("U"));:local M ($SPEEDS->("$IP")->("M"));
+/ip hot act find [:if (address=$IP) do={:set $M $"mac-address";:set $U $user;:set ($SPEEDS->("$IP")->("M")) $M;:set ($SPEEDS->("$IP")->("U")) $U;}];
+:if ([:len $U]=0 || [:len $M]=0) do={:set ($SPEEDS->("$IP")) [:toarray ""];/ip hot act find [:local IPs [:tostr $address];:local Sinfo ({"U"=[:tostr $user];"M"=[:tostr $"mac-address"]});:set ($SPEEDS->("$IPs")) (($SPEEDS->("$IPs")),$Sinfo);];:set $U ($SPEEDS->("$IP")->("U"));:set $M ($SPEEDS->("$IP")->("M"));};
+:local UM  ($U.(",").$M);:local UMA ($U.(",").$M.(",").$IP);:local A $IP;
+:local SP ($SPEEDS->("$U"));
+:set ($SP->("SP")) ($SPEEDS->("$UM")->("SP"));
+:set ($SP->("X")) ($SPEEDS->("$UM")->("X"));
+:set ($SP->("NSP")) ($SPEEDS->("$UM")->("NSP"));
+:set ($SP->("UPD")) ($SPEEDS->("$UM")->("UPD"));
+:set ($SP->("X")) ($SPEEDS->("$UM")->("X"));
+:set ($SP->("NSP")) ($SPEEDS->("$UM")->("NSP"));
+:set ($SP->("STATUS")) ($SPEEDS->("$UM")->("STATUS"));
+:set ($SP->("STA")) ($SPEEDS->("$UM")->("STA"));
+:set ($SP->("STV")) ($SPEEDS->("$UM")->("STV"));
+:set ($SP->("STN")) ($SPEEDS->("$UM")->("STN"));
+;:set ($SP->("UPD")) 1;:local SQ ("StopUpdate");:local X ($SP->("X"));:local UPD 1;:set $LISTIDS [:toarray ""];
+:do {[/ip fir address-list remove ("StopUpdate-$A")]} on-error={ };
+:do {:set ($SP->("SID")) [/ip fir address-list add address=$A list="StopUpdate" comment=("StopUpdate-$A") timeout=1d00:00:00;];} on-error={ };
+:set ($SP->("X")) $X;
+:set ($SP->("SP")) $X;
+:set ($SP->("UPD")) 1;
+:set ($SPEEDS->("$UM")) $SP;
+:set ($SPEEDS->("$U")->("SP")) $X;
+:set ($SPEEDS->("$U")->("UPD")) 1;
+:set ($SPEEDS->("$UM")->("UPD")) 1;
+:return ({"SPN"=($SP->("SPN"));"UPD"= 1;"X"=($SP->("X"));"SP"=($SP->("SP"));"NSP"=($SP->("NSP"));"KICK"=($SP->("KICK"));"STA"=($SP->("STA"));"STATUS"=($SP->("STATUS"));"SD"=($SP->("SD"));"PR"=($SP->("PR"));"STV"=($SP->("STV"));"STH"=($SP->("STH"));"STN"=($SP->("STN"))});
+};
+:set ($OSAMA->("FUN/UNSTOPUP")) do={
+:global OSAMA;:global SPEEDS;
+:if ([:len $IP]=0) do={:return ("");};
+:local U ($SPEEDS->("$IP")->("U"));
+:local M ($SPEEDS->("$IP")->("M"));
+/ip hot act find [:if (address=$IP) do={:set $M $"mac-address";:set $U $user;:set ($SPEEDS->("$IP")->("M")) $M;:set ($SPEEDS->("$IP")->("U")) $U;}];
+:local UM  ($U.(",").$M);:local UMA ($U.(",").$M.(",").$IP);:local A $IP;
+:local SP ($SPEEDS->("$U"));
+:set ($SP->("SP")) ($SPEEDS->("$UM")->("SP"));
+:set ($SP->("X")) ($SPEEDS->("$UM")->("X"));
+:set ($SP->("NSP")) ($SPEEDS->("$UM")->("NSP"));
+:set ($SP->("UPD")) ($SPEEDS->("$UM")->("UPD"));
+:set ($SP->("X")) ($SPEEDS->("$UM")->("X"));
+:set ($SP->("NSP")) ($SPEEDS->("$UM")->("NSP"));
+:set ($SP->("STATUS")) ($SPEEDS->("$UM")->("STATUS"));
+:set ($SP->("STA")) ($SPEEDS->("$UM")->("STA"));
+:set ($SP->("STV")) ($SPEEDS->("$UM")->("STV"));
+:set ($SP->("STN")) ($SPEEDS->("$UM")->("STN"));
+;:local DONE (false);:local X ($SP->("X"));:set ($SP->("UPD")) 0;:local UPD 0;
+:do {[/ip fir address-list remove ("StopUpdate-$A")];:set $DONE (true);} on-error={:set $DONE (false);};
+:if (!$DONE) do={/ip fir address-list find [:if (address~("$A")) do={:local aA [:tostr $address];:if ("$aA"="$A" || "$aA"=($A."/32")) do={:if ($list="StopUpdate") do={:do {:do {remove $".id";} on-error={};:set $DONE (true);} on-error={ };};};};];};
+:set ($SP->("X")) $X;
+:set ($SP->("SP")) $X;
+:set ($SP->("UPD")) 0;
+:set ($SPEEDS->("$UMA")) $SP;
+:set ($SPEEDS->("$UM")) $SP;
+:set ($SPEEDS->("$U")->("SP")) $X;
+:set ($SPEEDS->("$U")->("UPD")) 0;
+:set ($SPEEDS->("$UM")->("UPD")) 0;
+:set ($SPEEDS->("$UMA")->("UPD")) 0;
+:return ({"SPN"=($SP->("SPN"));"UPD" = 0;"X"=($SP->("X"));"SP"=($SP->("SP"));"NSP"=($SP->("NSP"));"KICK"=($SP->("KICK"));"STA"=($SP->("STA"));"STATUS"=($SP->("STATUS"));"SD"=($SP->("SD"));"PR"=($SP->("PR"));"STV"=($SP->("STV"));"STH"=($SP->("STH"));"STN"=($SP->("STN"))});
+};
+:set ($OSAMA->("FNCJD")) do={
+:global OSAMA;:global SPEEDS;
+:if ($Date~"[0-9]{4}-[0-9][0-9]-") do={:set $Date [($OSAMA->("DATE2V6")) Date=$Date];};
+:if ([:len ($OSAMA->("FNCJD")->("$Date"))]>0) do={:return ($OSAMA->("FNCJD")->("$Date"));};
+:if ([:len $Date]=0) do={:set $Date [/sys cl get date];};
+:if ($Date~"[0-9]{4}-[0-9][0-9]-") do={:set $Date [($OSAMA->("DATE2V6")) Date=$Date];};
+:local M [find ($OSAMA->("MONTHS")) [:pick $Date 0 3]];
+:if ([:len $M]=0) do={:set $M [find ($OSAMA->("MONTHSUPPER")) [:pick $Date 0 3]];:if ([:len $M]=0) do={/log warning ("FNCJD Error Date=$Date");:error ("FNCJD Error Date=$Date");}};
+:local Y [:pick $Date 7 11];
+:if ($M<2) do={:return ((2-($Y/100)+(($Y/100)/4))+([:pick $Date 4 6])+((($Y - 1 + 4716) * 36525)/100)+((306001*($M+1+1+12))/10000)-1525);};
+:local Out ((2-($Y/100)+(($Y/100)/4))+([:pick $Date 4 6])+((($Y+4716) * 36525)/100)+((306001*($M+1+1))/10000)-1525);
+:set ($OSAMA->("FNCJD")->("$Date")) $Out;
+:return $Out;
+};
+:set ($OSAMA->("FNCJD7")) do={
+:global OSAMA;:global SPEEDS;
+:if ([:len ($OSAMA->("FNCJD7")->("$Date"))]>0) do={:return ($OSAMA->("FNCJD7")->("$Date"));};
+:if ([:len $Date]=0) do={:set $Date [/sys cl get date];};
+:local M [:pick $Date 5 7];
+:local Y [:pick $Date 0 4];
+:if ($M<2) do={:return ((2-($Y/100)+(($Y/100)/4))+([:pick $Date 4 6])+((($Y - 1 + 4716) * 36525)/100)+((306001*($M+1+1+12))/10000)-1525);};
+:local Out ((2-($Y/100)+(($Y/100)/4))+([:pick $Date 4 6])+((($Y+4716) * 36525)/100)+((306001*($M+1+1))/10000)-1525);
+:set ($OSAMA->("FNCJD7")->("$Date")) $Out;
+:return $Out;
+};
+:set ($OSAMA->("DATE2V6")) do={
+:global OSAMA;:if ([:len ($OSAMA->("DATE2V6")->("$Date"))]>0) do={:return ($OSAMA->("DATE2V6")->("$Date"));};
+:if ([:len $Date]=0) do={:set $Date [/sys cl get date];};
+if ($Date~"[0-9]{4}-[0-9][0-9]-") do={
+:local D [:pick $Date 8 10];:if ($D~"[0][0-9]") do={:set $D [:pick $Date 9 10];};
+:local M [:pick $Date 5 7];:if ($M~"[0][0-9]") do={:set $M [:pick $Date 6 7];};
+:local Y [:pick $Date 0 4];
+:local L [:len $D];:if ($L<2) do={:set $L ($L+2);:set $D ("00".$D);:set $D [:pick $D ($L-2) $L];};:set $L [:len $Y];:if ($Y<4) do={:set $L ($L+4);:set $Y ("0000".$Y);:set $Y [:pick $Y ($L-4) $L];};:if ([:len $M]=0) do={:set $M 1;};
+:if ($Date~("[:]")) do={:local f2 [:find $Date (":")];
+:local Out ([:pick ($OSAMA->("MONTHS")) ($M - 1)].("/").$D.("/").$Y.[:pick $Date ($f2-2) ($f2+6)]);
+:set ($OSAMA->("DATE2V6")->("$Date")) $Out;
+:return $Out;
+};
+:local Out ([:pick ($OSAMA->("MONTHS")) ($M - 1)].("/").$D.("/").$Y.[:pick $Date 10 ([:len $Date]+1)]);
+:set ($OSAMA->("DATE2V6")->("$Date")) $Out;
+:return $Out;
+}
+:return $Date;
+}
+:set ($OSAMA->("TIME2NUM")) do={
+:global OSAMA;:local TimeS [:tostr $Time];:local ca ("$OPTION-$TimeS");
+:if ([:len ($OSAMA->("TIME2NUM")->("$ca"))]>0) do={:return ($OSAMA->("TIME2NUM")->("$ca"));};
+:local t 0;:local h 0;:local m 0;:local s 0;
+:if ($TimeS~("([0-9][wW]|[0-9][Dd])")) do={
+:local W (([:find $TimeS ("W")],[:find $TimeS ("w")],0)->0);
+:local D (([:find $TimeS ("D")],[:find $TimeS ("d")],0)->0);
+:if ($D<$W) do={
+:if ($D>0) do={:set $t ($t+(([:tonum [:pick $TimeS 0 $D]]+0)*86400));:if ($W>0) do={:set $t ($t+(([:tonum [:pick $TimeS ($D+1) $W]]+0)*604800));};} else={:if ($W>0) do={:set $t ($t+(([:tonum [:pick $TimeS 0 $W]]+0)*604800));};};
+} else={
+:if ($W>0) do={:set $t ($t+(([:tonum [:pick $TimeS 0 $W]]+0)*604800));:if ($D>0) do={:set $t ($t+(([:tonum [:pick $TimeS ($W+1) $D]]+0)*86400));};} else={:if ($D>0) do={:set $t ($t+(([:tonum [:pick $TimeS 0 $D]]+0)*86400));};};
+};};
+:if ($TimeS~("[0-9][:]")) do={
+  :local T ($TimeS."00:00:00");
+  :local f1 ([:find $T (":")]+0);
+  :local f2 ([:find $T (":") $f1]+0);
+  :set $h [:tonum [:pick $T 0 $f1]];
+  :set $m [:tonum [:pick $T ($f1+1) $f2]];
+  :set $s [:tonum [:pick $T ($f2+1) ($f2+3)]];
+  :set $t ($t+(([:tonum $h]+0)*60*60)+(([:tonum $m]+0)*60)+([:tonum $s]+0));
+};
+:if ("$OPTION"="SPLIT") do={:local Out (($h+0),($m+0),($s+0),($t+0));:set ($OSAMA->("TIME2NUM")->("$ca")) $Out;:return $Out;} else={ };
+:set ($OSAMA->("TIME2NUM")->("$ca")) $t;
+:return $t;
+};
+:set ($OSAMA->("ADD/DATE")) do={
+:global OSAMA;
+:local ca ("$Date $Time+ $N ");
+:if ([:len ($OSAMA->("ADD/DATE")->("$ca"))]>0) do={:return ($OSAMA->("ADD/DATE")->("$ca"));};
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};
+:if (($N~"[wWdD:]")) do={:set $N [($OSAMA->("TIME2NUM")) Time=$N];};
+:local L [:len $N];:local n ([:tonum ("$N")]+0);:if ($L>1 && $n=0 && ("$N"!="0")) do={:log warning ("ADD/DATE Error N=($N) return=$n");:error ("ADD/DATE Error N=($N) return=$n");};
+:if ($Date~"[0-9]{4}-[0-9][0-9]-") do={:set $Date [($OSAMA->("DATE2V6")) Date=$Date];};
+:if ($Date~"[:]"&&$Date~"[/]") do={:local f1 [:find $Date ("/")];:local f2 [:find $Date (":")];:set $Time [:pick $Date ($f2-2) ($f2+6)];:set $Date [:pick $Date ($f1-3) ($f1+8)];};
+:set $ca ("$Date $Time+ $N ");
+:if ([:len ($OSAMA->("ADD/DATE")->("$ca"))]>0) do={:return ($OSAMA->("ADD/DATE")->("$ca"));};
+:local a [($OSAMA->("NUM2DATE")) N=([($OSAMA->("TIMESTAMP")) Date=$Date Time=$Time]+$n)];
+:set ($OSAMA->("ADD/DATE")->("$ca")) $a;
+:return $a;
+};
+:set ($OSAMA->("DATE2NUM")) do={
+:global OSAMA;
+:local ca ("$Date $Time+ $N ");
+:if ([:len ($OSAMA->("DATE2NUM")->("$ca"))]>0) do={:return ($OSAMA->("DATE2NUM")->("$ca"));};
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};
+:if (($N~"[wWdD:]")) do={:set $N [($OSAMA->("TIME2NUM")) Time=$N];};
+:local L [:len $N];:local n ([:tonum ("$N")]+0);:if ($L>1 && $n=0 && ("$N"!="0")) do={:log warning ("DATE2NUM Error N=($N) return=$n");:error ("DATE2NUM Error N=($N) return=$n");};
+:if ($Date~"[0-9]{4}-[0-9][0-9]-") do={:set $Date [($OSAMA->("DATE2V6")) Date=$Date];};
+:if ($Date~"[:]"&&$Date~"[/]") do={:local f1 [:find $Date ("/")];:local f2 [:find $Date (":")];:set $Time [:pick $Date ($f2-2) ($f2+6)];:set $Date [:pick $Date ($f1-3) ($f1+8)];};
+:set $ca ("$Date $Time+ $N ");
+:if ([:len ($OSAMA->("DATE2NUM")->("$ca"))]>0) do={:return ($OSAMA->("DATE2NUM")->("$ca"));};
+:local a ([($OSAMA->("TIMESTAMP")) Date=$Date Time=$Time]+$n);
+:set ($OSAMA->("DATE2NUM")->("$ca")) $a;
+:return $a;
+};
+:set ($OSAMA->("IS/DATE")) do={:global OSAMA;:if ($Date~"[0-9]{4}-[0-9][0-9]-") do={:set $Date [($OSAMA->("DATE2V6")) Date=$Date];};:return ([:tostr $Date]~("^[A-Za-z]{2,3}[/][0-9][0-9][/][0-9]{1,4}\$"));}
+:set ($OSAMA->("ADD/DATE/DATE")) do={
+:global OSAMA;
+:local ca ("$Date1 $Time1+$Date2 $Time2");
+:if ([:len ($OSAMA->("ADD/DATE/DATE")->("$ca"))]>0) do={:return ($OSAMA->("ADD/DATE/DATE")->("$ca"));};
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};
+:local Times  [:totime ($OSAMA->("GMT-OFFSET"))];
+:if ($Date1~"[0-9]{4}-[0-9][0-9]-") do={:set $Date1 [($OSAMA->("DATE2V6")) Date=$Date1];};
+:if ($Date2~"[0-9]{4}-[0-9][0-9]-") do={:set $Date2 [($OSAMA->("DATE2V6")) Date=$Date2];};
+:if ($Date1~("[\20/0-9A-Za-z]{8,20}[:]")) do={:local f1 [:find $Date1 ("/")];:local f2 [:find $Date1 (":")];:set $Date1 [:pick $Date1 ($f1-3) ($f1+8)];:set $Time1 [:pick $Date1 ($f2-2) ($f2+6)];};
+:if ($Date2~("[\20/0-9A-Za-z]{8,20}[:]")) do={:local f1 [:find $Date2 ("/")];:local f2 [:find $Date2 (":")];:set $Date2 [:pick $Date2 ($f1-3) ($f1+8)];:set $Time2 [:pick $Date2 ($f2-2) ($f2+6)];};
+:set $Date1 (($Date1,"jan/01/1970")->0);:set $Date2 (($Date2,"jan/01/1970")->0);
+:if ($Date1="jan/01/1970") do={:set $Time2 (($Time2,$Times)->0);:if ($Date2="jan/01/1970") do={:set $Time2 (($Time2,"00:00:01")->0);} else={:set $Time2 (($Time2,"00:00:01")->0);};} else={:set $Time2 (($Time2,"00:00:01")->0);:if ($Date2="jan/01/1970") do={:set $Time2 (($Time2,$Times)->0);} else={:set $Time2 (($Time2,"00:00:01")->0);};};
+:set ca ("$Date1 $Time1+$Date2 $Time2");
+:if ([:len ($OSAMA->("ADD/DATE/DATE")->("$ca"))]>0) do={:return ($OSAMA->("ADD/DATE/DATE")->("$ca"));};
+:local a ([($OSAMA->("TIMESTAMP")) Date=$Date1 Time=$Time1]+[($OSAMA->("TIMESTAMP")) Date=$Date2 Time=$Time2]);
+:set ($OSAMA->("ADD/DATE/DATE")->("$ca")) $a;
+:return $a;
+};
+:set ($OSAMA->("NUM2TIME")) do={
+:global OSAMA;
+:local ca ("T-".[:tostr $N]);:if ([:len ($OSAMA->("NUM2TIME")->("$ca"))]>0) do={:return ($OSAMA->("NUM2TIME")->("$ca"));};
+:local L [:len $N];:local n ([:tonum ("$N")]+0);:if ($L>1 && $n=0 && ("$N"!="0")) do={:log warning ("NUM2TIME Error N=($N) return=$n");:error ("NUM2TIME Error N=($N) return=$n");};
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};
+:local h [:totime (($n % 86400)+($OSAMA->("GMT-OFFSET")))];
+:if ($h>23:59:59) do={:set $h 00:00:01;};
+:if ($h<00:00:01) do={:set $h 00:00:01;};
+:set ($OSAMA->("NUM2TIME")->("$ca")) $h;
+:return $h;
+};
+:set ($OSAMA->("NUM2YEAR")) do={
+:global OSAMA;
+:local ca ("Y-".[:tostr $N]);:if ([:len ($OSAMA->("NUM2YEAR")->("$ca"))]>0) do={:return ($OSAMA->("NUM2YEAR")->("$ca"));};
+:local L [:len $N];:local n ([:tonum ("$N")]+0);:if ($L>1 && $n=0 && ("$N"!="0")) do={:log warning ("NUM2YEAR Error N=($N) return=$n");:error ("NUM2YEAR Error N=($N) return=$n");};
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};
+:local nr ($n - 63072000 + ($OSAMA->("GMT-OFFSET")));
+:local mr ($nr % 126230400);
+:local y (63072000 + $nr - (($nr/126230400)*86400));
+:if ($n>126230400) do={
+  :set $y (($y/31536000)+1970);
+} else={
+  :if ($n<31536000) do={:set $y 1970;} else={
+  :set $n ($n - 31536000);
+  :if ($n<31536000) do={:set $y 1971;} else={
+  :set $n ($n - 31536000);
+  :if ($n<31622400) do={:set $y 1972;} else={
+  :set $n ($n - 31622400);
+  :if ($n<31536000) do={:set $y 1973;} else={:set $y 1974;};};};}
+};
+:set ($OSAMA->("NUM2YEAR")->("$ca")) $y;
+:return $y;
+};
+:set ($OSAMA->("NUM2MONTH")) do={
+:global OSAMA;
+:local ca ("M-".[:tostr $N]);:if ([:len ($OSAMA->("NUM2MONTH")->("$ca"))]>0) do={:return ($OSAMA->("NUM2MONTH")->("$ca"));};
+:local L [:len $N];:local n ([:tonum ("$N")]+0);:if ($L>1 && $n=0 && ("$N"!="0")) do={:log warning ("NUM2MONTH Error N=($N) return=$n");:error ("NUM2MONTH Error N=($N) return=$n");};
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};
+:local nr ($n - 63072000 + ($OSAMA->("GMT-OFFSET")));:local mr ($nr % 126230400);:local dr (($mr/ 86400)+1);
+:local d  ($dr - ((-729,-364,-365,-364,0,366,731,1096,1096)->[:find (($dr <= -364),($dr < 0),($dr = 0),($dr = 1 && (($N+0) - 63061200) < 0),($dr <= 366),($dr <= 731),($dr <= 1096),($dr > 1096)) (true)]));
+:local k  [:find ((true),(false)) (($nr<0)||($mr >= 31622400))];
+:set $d ((0,($d-$k))->([:find ((false),(true)) ($d>0&&$d<366)]));
+:local c  [:find (($d<=(31-$k)),($d<=59),($d<=90),($d<=120),($d<=151),($d<=181),($d<=212),($d<=243),($d<=273),($d<=304),($d<=334),($d<=365)) (true)];
+:local m  [:pick ($OSAMA->("MONTHS")) $c];
+:set ($OSAMA->("NUM2MONTH")->("$ca")) $m;
+:return $m;
+};
+:set ($OSAMA->("NUM2MDAYS")) do={
+:global OSAMA;:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};:local dr  (((($N - 63072000 + ($OSAMA->("GMT-OFFSET"))) % 126230400)/ 86400)+1);
+:local d  ($dr - ((-729,-364,-365,-364,0,366,731,1096,1096)->[:find (($dr <= -364),($dr < 0),($dr = 0),($dr = 1 && (($N+0) - 63061200) < 0),($dr <= 366),($dr <= 731),($dr <= 1096),($dr > 1096)) (true)]));
+:return ((0,$d)->[:find ((false),(true)) ($d>0&&$d<366)]);
+};
+:set ($OSAMA->("NUM2DAY")) do={
+:global OSAMA;
+:local L [:len $N];:local n ([:tonum ("$N")]+0);:if ($L>1 && $n=0 && ("$N"!="0")) do={:log warning ("NUM2DAY Error N=($N) return=$n");:error ("NUM2DAY Error N=($N) return=$n");};
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};
+:local r ($n % 86400);:local h [:totime  ($r+($OSAMA->("GMT-OFFSET")))];:local ca (("S-").[:tostr ($n/100)]."00");:if ($h>23:59:59) do={:set $h ($h - 23:59:59);:if ($h>23:59:59) do={:set $h [:totime ([($OSAMA->("TIME2NUM")) Time=$h]%86400)];};};:if ($h<00:00:01) do={:set $h 00:00:01;};
+:if ($h<00:05:00||$h>23:55:59) do={:set $ca (("D-").[:tostr $n]);};:if ([:len ($OSAMA->("NUM2DAY")->("$ca"))]>0) do={:return ($OSAMA->("NUM2DAY")->("$ca"));};
+:local nr ($n - 63072000 + ($OSAMA->("GMT-OFFSET")));:local mr ($nr % 126230400);:local dr (($mr/ 86400)+1);
+:local dz ((-729,-364,-365,-364,0,366,731,1096,1096)->[:find (($dr <= -364),($dr < 0),($dr = 0),($dr = 1 && (($N+0) - 63061200) < 0),($dr <= 366),($dr <= 731),($dr <= 1096),($dr > 1096)) (true)]);
+:local d  ($dr - $dz);
+:local k  [:find ((true),(false)) (($nr<0)||($mr >= 31622400))];
+:set $d ((0,($d-$k))->([:find ((false),(true)) ($d>0&&$d<366)]));
+:local c  [:find (($d<=(31-$k)),($d<=59),($d<=90),($d<=120),($d<=151),($d<=181),($d<=212),($d<=243),($d<=273),($d<=304),($d<=334),($d<=365)) (true)];
+:if ($c>=2 && $dz<366) do={:set $k 0;};
+:set $d   ($d+$k-[:pick (0,31,59,90,120,151,181,212,243,273,304,334) $c]);:if ($d<10) do={:set $d ("0$d");};
+:set ($OSAMA->("NUM2DAY")->("$ca")) $d;
+:return $d;
+};
+:set ($OSAMA->("NUM2FILENAME")) do={
+:global OSAMA;:local L [:len $N];:if ($L=0) do={:if ([:len $Date]=0) do={:set $N [($OSAMA->("TIME2NUM"))];} else={:set $N [($OSAMA->("TIME2NUM")) Date=$Date Time=$Time];};};
+:local n ([:tonum ("$N")]+0);:if ($L>1 && $n=0 && ("$N"!="0")) do={:log warning ("NUM2FILENAME Error N=($N) return=$n");:error ("NUM2DATE Error N=($N) return=$n");};
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};
+:local r ($n % 86400);:local h [:totime  ($r+($OSAMA->("GMT-OFFSET")))];:local ca (("S-").[:tostr ($n/100)]."00"."$S1$OPTION");:if ($h>23:59:59) do={:set $h ($h - 23:59:59);:if ($h>23:59:59) do={:set $h [:totime ([($OSAMA->("TIME2NUM")) Time=$h]%86400)];};};:if ($h<00:00:01) do={:set $h 00:00:01;};
+:if ($h<00:02:00||$h>23:57:59) do={:set $ca (("F-").[:tostr $n]."$S1$OPTION");};:if ([:len ($OSAMA->("NUM2FILENAME")->("$ca"))]>0) do={:return ($OSAMA->("NUM2FILENAME")->("$ca"));};
+:local nr ($n - 63072000 + ($OSAMA->("GMT-OFFSET")));:local mr ($nr % 126230400);:local dr (($mr/ 86400)+1);
+:local dz ((-729,-364,-365,-364,0,366,731,1096,1096)->[:find (($dr <= -364),($dr < 0),($dr = 0),($dr = 1 && (($N+0) - 63061200) < 0),($dr <= 366),($dr <= 731),($dr <= 1096),($dr > 1096)) (true)]);
+:local d  ($dr - $dz);
+:local k  [:find ((true),(false)) (($nr<0)||($mr >= 31622400))];
+:set $d ((0,($d-$k))->([:find ((false),(true)) ($d>0&&$d<366)]));
+:local c  [:find (($d<=(31-$k)),($d<=59),($d<=90),($d<=120),($d<=151),($d<=181),($d<=212),($d<=243),($d<=273),($d<=304),($d<=334),($d<=365)) (true)];
+:if ($c>=2 && $dz<366) do={:set $k 0;};
+:set $d   ($d+$k-[:pick (0,31,59,90,120,151,181,212,243,273,304,334) $c]);:if ($d<10) do={:set $d ("0$d");};
+:local m  [:pick ($OSAMA->("MONTHS")) $c];
+:local y [($OSAMA->("NUM2YEAR")) N=$N];
+:local sp $S1;:if ([:len $sp]=0) do={:set $sp ("/");};
+:if ("$OPTION"="SPLIT") do={:set ($OSAMA->("NUM2FILENAME")->("$ca")) ("$y","$m","$d");:return ("$y","$m","$d");}
+:set ($OSAMA->("NUM2FILENAME")->("$ca")) ("$y$sp$m$sp$d");
+:return ("$y$sp$m$sp$d");
+};
+:set ($OSAMA->("NUM2DATE")) do={
+:global OSAMA;
+:local L [:len $N];:local n ([:tonum ("$N")]+0);:if ($L>1 && $n=0 && ("$N"!="0")) do={:log warning ("NUM2DATE Error N=($N) return=$n");:error ("NUM2DATE Error N=($N) return=$n");};
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];};
+:local r ($n % 86400);:local h [:totime  ($r+($OSAMA->("GMT-OFFSET")))];:local ca (("S-").[:tostr ($n/100)]."00");:if ($h>23:59:59) do={:set $h ($h - 23:59:59);:if ($h>23:59:59) do={:set $h [:totime ([($OSAMA->("TIME2NUM")) Time=$h]%86400)];};};:if ($h<00:00:01) do={:set $h 00:00:01;};
+:if ($h<00:05:00||$h>23:55:59) do={:set $ca (("SD-").[:tostr $n]);};:if ([:len ($OSAMA->("NUM2DATE")->("$ca"))]>0) do={:return (($OSAMA->("NUM2DATE")->("$ca")).(" $h"));};
+:local nr ($n - 63072000 + ($OSAMA->("GMT-OFFSET")));:local mr ($nr % 126230400);:local dr (($mr/ 86400)+1);
+:local dz ((-729,-364,-365,-364,0,366,731,1096,1096)->[:find (($dr <= -364),($dr < 0),($dr = 0),($dr = 1 && (($N+0) - 63061200) < 0),($dr <= 366),($dr <= 731),($dr <= 1096),($dr > 1096)) (true)]);
+:local d  ($dr - $dz);
+:local k  [:find ((true),(false)) (($nr<0)||($mr >= 31622400))];
+:set $d ((0,($d-$k))->([:find ((false),(true)) ($d>0&&$d<366)]));
+:local c  [:find (($d<=(31-$k)),($d<=59),($d<=90),($d<=120),($d<=151),($d<=181),($d<=212),($d<=243),($d<=273),($d<=304),($d<=334),($d<=365)) (true)];
+:if ($c>=2 && $dz<366) do={:set $k 0;};
+:set $d   ($d+$k-[:pick (0,31,59,90,120,151,181,212,243,273,304,334) $c]);:if ($d<10) do={:set $d ("0$d");};
+:local m  [:pick ($OSAMA->("MONTHS")) $c];
+:local y [($OSAMA->("NUM2YEAR")) N=$N];
+:set ($OSAMA->("NUM2DATE")->("$ca")) ("$m/$d/$y");
+:return ("$m/$d/$y $h");
+};
+:set ($OSAMA->("TIMESTAMP")) do={
+:global OSAMA;
+:if ([:len $Time]=0) do={:set $Time [/sys cl get time];};
+:if ([:len $Date]=0) do={:set $Date [/sys cl get date];};
+:if ($Date~"[0-9]{4}-[0-9][0-9]-") do={:set $Date [($OSAMA->("DATE2V6")) Date=$Date];};
+:if ($Date~("[\20/0-9A-Za-z]{8,20}[:]")) do={:local f1 [:find $Date ("/")];:local f2 [:find $Date (":")];:set $Date [:pick $Date ($f1-3) ($f1+8)];:set $Time [:pick $Date ($f2-2) ($f2+6)];};
+:local ca ("$Date");
+:local T [($OSAMA->("TIME2NUM")) Time=$Time OPTION=("SPLIT")];
+:if ([:len ($OSAMA->("TIMESTAMP")->("$Date"))]>0) do={:return (($OSAMA->("TIMESTAMP")->("$ca"))+($T->3));}
+:if ([:len ($OSAMA->("GMT-OFFSET"))]=0) do={:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];:return ((([($OSAMA->("FNCJD")) Date=$Date]-2440587) * 86400) + ($T->3) - [/sys cl get gmt-offset])};
+:local Out ((([($OSAMA->("FNCJD")) Date=$Date]-2440587) * 86400) + ($T->3) - ($OSAMA->("GMT-OFFSET")));:local gmt1 ($Out-($OSAMA->("GMT-OFFSET")));:local gmt2 ($Out-($OSAMA->("GMT-OFFSET")));:if (($gmt1<2 && $gmt1>-2)||($gmt2<2 && $gmt2>-2)) do={:set $Out 0;}; 
+:if (($Out< 0) || ($Out>4102405094)) do={/log warning ("TIMESTAMP Error Date=$Date $Time=Time TIMESTAMP=$Out");:error ("TIMESTAMP Error Date=$Date Time=$Time TIMESTAMP=$Out");};
+:set ($OSAMA->("TIMESTAMP")->("$ca")) ($Out-($T->3));
+:return $Out;
+};
+:set ($OSAMA->("MACROAMING")) do={
+  :global OSAMA;:global SPEEDS;:global GETACTIVE;
+  :if ([:len $IP]=0) do={:return ("");};
+  :if ([:len $M]=0 || [:len $U]=0) do={:set $M ($OSAMA->("MACROAMING")->("$IP")->("M"));:set $U ($OSAMA->("MACROAMING")->("$IP")->("U"));};
+  :if ([:len $M]=0) do={:local AC ([$GETACTIVE OPTION=("address")]->("$IP")->0);:set $U ($AC->("user"));:set $M ($AC->("mac-address"));};
+  :local H [:toarray ""];:local B [:toarray ""];:local ID;:local a [:toip ("$IP")];
+  :do {/ip hotspot host find [:set ($H->([:tostr $"to-address"])) $address;:set ($B->([:tostr $address])) $server];/ip ho ip fi [:if ($comment~("^KICK_")) do={:if ($type="block") do={:do {remove $".id";} on-error={};} else={:if ([:len ($H->([:tostr $"to-address"]))]=0) do={:do {remove $".id";} on-error={};};};} ];} on-error={ };
+  :local aa [:tostr ($a+1)];:if ([:len $aa]=0) do={:return ("");};
+  :if ([:len ($H->("$aa"))]>0) do={:local k 2;:while ([:len ($H->("$aa"))]>0 && $k<255) do={:set $k ($k+1);:set $aa [:tostr ($a+$k)];};};
+  :do {/ip ho ip fi [:if ($comment~"KICK_") do={:if ($"mac-address"=$M || $"to-address"=$aa || $"to-address"=$a) do={remove $".id"}}]} on-error={ };
+  # :do {/ip dhcp-server lease find [:if ($"mac-address"=$M || $"address"=$aa || $"active-mac-address"=$M || $"mac-address"=($OSAMA->("MACROAMING")->("$IP")->("M1"))) do={:do {remove $".id";} on-error={};}];} on-error={ };
+  :do {:set $ID [/ip ho ip add type=block comment=("KICK_$M") mac-address=$M address=($H->("$IP"))];} on-error={ };
+  /ip hot coo find [:if ($user="$U") do={:do {remove $".id";} on-error={};}];
+  :delay 10s;
+  :if ([:len $deL]>0) do={:delay $deL;};
+  # :do {/ip dhcp-server lease find [:if ($"mac-address"=$M || $"address"=$IP || $"address"=$aa || $"active-mac-address"=$M || $"mac-address"=($OSAMA->("MACROAMING")->("$IP")->("M1"))) do={:do {remove $".id";} on-error={};}];} on-error={ };
+  /ip hot coo find [:if ($user="$U") do={:do {remove $".id";} on-error={};}];
+  :do {/ip ho ip fi [:if ($comment=("KICK_$M") || $".id"=$ID) do={:do {remove $".id";} on-error={};};];} on-error={ };
+  /ip hot coo find [:if ($user="$U") do={:do {remove $".id";} on-error={};}];
+  :return ("");
+};
+:global BOOLEN;:set $BOOLEN do={:local B [:tostr $1];:return (!((("$B")~("^[ ]*(0|[Ff][aA][lL][sS][eE]|[nN][oO]|[nN][iIuU][Ll]{1,2}|[nN]othing|[nN][AaOo][nN][eE]{0,1})[ ]*\$"))||([:len $B]=0)))};
+:global FILES [:toarray ""];
+:set ($FILES->("WWW")) do={:global FILES;:local A [/ip service get ([find name=www]->0) ];:set ($FILES->("WWW-disabled")) ($A->("disabled"));:set ($FILES->("WWW-port")) ($A->("port"));:return ($A->("port"));};
+:set ($FILES->("NEW")) do={:global BOOLEN;:global FILES;:if ([:len  $Path]=0) do={:return ("");};:local A ($FILES->("WWW-port"));:if ([:len $A]=0) do={:set $A [($FILES->("WWW"))];};:local B [$BOOLEN ($FILES->("WWW-disabled"))];:if ($B) do={[/ip service enable ([find name=www]->0) ];};:local U $Url;:if ([:len $U]=0) do={:set $U (("http://127.0.0.1:").$A.("/favicon.png"));};:do {/tool fetch url=[:tostr $U] dst-path=[:tostr $Path];} on-error={};:if ($B) do={[/ip service disable ([find name=www]->0) ];};:delay 10ms;:local F;:do {:set $F [/file get ("$Path")];[/file set ($F->(".id")) contents=[:tostr $Data]];} on-error={};:return ($F->(".id"));};
+:set ($FILES->("SET")) do={:global BOOLEN;:global FILES;:if ([:len  $Path]=0) do={:return (false);};:local A ($FILES->("WWW-port"));:if ([:len $A]=0) do={:set $A [($FILES->("WWW"))];};:local B [$BOOLEN ($FILES->("WWW-disabled"))];:if ($B) do={[/ip service enable ([find name=www]->0) ];};:local U $Url;:local Fid;:if ([:len $U]=0) do={:set $Fid [($FILES->("NEW")) Path=("umfiles/NEW/$Path") Data=$Data];:set $U (("http://127.0.0.1:").$A.("/umfiles/NEW/$Path"));};:do {/tool fetch url=$U dst-path=$Path;} on-error={};:if ($B) do={[/ip service disable ([find name=www]->0) ];};:delay 10ms;:if ([:len $Fid]!=0) do={:do {/file remove ("umfiles/NEW")} on-error={};};:return (true);};
+:set ($FILES->("HIDE")) do={:global BOOLEN;:global FILES;:if ([:len  $Path]=0) do={:return (false);};:local A ($FILES->("WWW-port"));:if ([:len $A]=0) do={:set $A [($FILES->("WWW"))];};:local T ("$Type");:if ([:len $T]=0) do={:set $T ("osama")};:if ([:len ($FILES->("HIDE-.type"))]=0) do={:set ($FILES->("HIDE-.type")) [($FILES->("NEW")) Path=("umfiles/type.txt") Data=("$T")]} else={:do {/file set ($FILES->("HIDE-.type")) contents=("$T")} on-error={ };};:local B [$BOOLEN ($FILES->("WWW-disabled"))];:if ($B) do={[/ip service enable ([find name=www]->0) ];};:local U $Url;:if ([:len $U]=0) do={:set $U (("http://127.0.0.1:").$A.("/umfiles/type.txt"));};:if (!($Path~("/\\.type\$"))) do={:if (!($Path~("/\$"))) do={:set $Path ($Path.("/.type"));} else={:set $Path ($Path.(".type"));};};:do {/tool fetch url=$U dst-path=$Path;} on-error={};:if ($B) do={[/ip service disable ([find name=www]->0) ];};:return (true);};
+:set ($FILES->("SHOW")) do={:global BOOLEN;:global FILES;:if ([:len  $Path]=0) do={:return (false);};:local A ($FILES->("WWW-port"));:if ([:len $A]=0) do={:set $A [($FILES->("WWW"))];};:local B [$BOOLEN ($FILES->("WWW-disabled"))];:if ($B) do={[/ip service enable ([find name=www]->0) ];};:if (!($Path~("/\\.type\$"))) do={:set $Path ($Path.("/.type"));};:do {/tool fetch url=(("http://127.0.0.1:").$A.("/show.js")) dst-path=$Path;} on-error={};:if ($B) do={[/ip service disable ([find name=www]->0) ];};:return (true);};
+:set ($OSAMA->("GET/FILE")) do={:if ([:len $Table]=0) do={:set $Table ("db");};:if ([:len $Bace]=0) do={:set $Bace ("DATABACE");};:local fnn ($Bace."/".$Table);:local fn ($fnn.".txt");:do {/import $fn;:return 1;} on-error={:local F  [/file find name~"^($fnn)"];:if ([:len $F]=0) do={:do {/tool fetch url=(("http://127.0.0.1").[/ip service get [find name=www] port ].("/index2.html")) dst-path=$fn;} on-error={};};:delay 2s;:if ([:len [/file find name="$Bace"]]>0 && [:len [/file find name~"^($fnn)"]]=0) do={:execute script={:return (":local a;");} file=("$fnn");:return 0;};};:return 1;};
+:set ($OSAMA->"CLEATEXPIRED") do={
+  :global OSAMA;:global SPEEDS;
+  :if ([:len $Validity]=0) do={:set $Validity (365*24*60*60);};
+  :if ([:len $Name]=0) do={:set $Name ("t");};
+  :local TimeS ([($OSAMA->("TIMESTAMP"))] - $Validity);
+  :if ([:len $Add]=0) do={
+    :foreach n,v in=$Array do={
+      :if (($v->("$Name")) < $TimeS) do={:set ($Array->("$n"));};
+    };
+  } else={
+    :foreach n,v in=$Array do={
+      :if ([:len ($v->("$Name"))]=0) do={:set ($Array->("$n")->("$Name")) $Add;} else={
+        :if (($v->("$Name")) < $TimeS) do={:set ($Array->("$n"));};
+      };
+    };
+  };
+  :return $Array;
+};
+:set ($OSAMA->("TOARRAY/TXT")) do={:if (($OSAMA->("TOARRAY/TXT")->("$Name"))~("^[:]")) do={:return ($OSAMA->("TOARRAY/TXT")->("$Name"));};:if (!($Name~("([\\-]|[\\(]|[\\\"]|[\\\$]|[\\>])"))) do={:set $Name ("\$\"$Name\"");};:local a (":if ([:typeof $Name]!=\"array\") do={:set $Name [:toarray \"\"];};\r\n");:set ($OSAMA->("TOARRAY/TXT")->("$Name")) $a;:return $a;};
+:set ($OSAMA->("TOARRAY/TXT/ARR")) do={
+:global OSAMA;:global CACHE;
+:local LN [:len [:tostr $Array]];:local ca ("");
+:if ($LN<64) do={:local St (("TOARRAY/TXT/ARR-").("$Bace").("-").("$Table").("-").[:tostr $Array].("-").[:len $Array2]);:if ([:len $St]<256) do={:set $ca $St;:if (($CACHE->("$ca"))~("[:]")) do={:return ($CACHE->("$ca"));};};};
+:local DB ("");
+:if ([:len $Array2]=0) do={:set $Array2 [:toarray ""];};
+:foreach n,v in=$Array do={
+:local NAME "";:if ([:typeof $n]="num") do={:set $NAME ("($n+0)");} else={:set $NAME (("(\"").$n.("\")"));:if ($n~("([\\-]|[\\[]|[\\(]|[\\\"]|[\\\$]|[\\>])")) do={:set $NAME (("(\"").[($OSAMA->("ENCODE/REPLACE")) S1=$n S2=("%") S3=("\\")].("\")"));};};
+:if ([:len ($Array2->("$NAME"))]>0) do={:set $NAME ("\$a".($Array2->("$NAME")));} else={:local a [:len $Array2];:set ($Array2->("$NAME")) $a;:if ($OPTION!="FAST") do={:set $DB ($DB.(":local a$a $NAME;\r\n"));:set $NAME ("\$a".($Array2->("$NAME")));};};
+:if ([:typeof $v]="array") do={
+  :local DB2 [($OSAMA->("TOARRAY/TXT/ARR")) OPTION=$OPTION Array=$v Array2=$Array2 Bace=("$Bace->$NAME")];
+  :set $DB ($DB.[($OSAMA->("TOARRAY/TXT")) Name=("($Bace->$NAME)")].$DB2);
+} else={
+:local VALUE (("(\"").$v.("\")"));
+:if ($v~("([\\-]|[\\[]|[\\(]|[\\\"]|[\\\$]|[\\>])")) do={:set $VALUE (("(\"").[($OSAMA->("ENCODE/REPLACE")) S1=$v S2=("%") S3=("\\")].("\")"));};
+:if ([:len ($Array2->("$VALUE"))]>0) do={:set $VALUE ("\$a".($Array2->("$VALUE")));} else={:local a [:len $Array2];:set ($Array2->("$VALUE")) $a;:if ($OPTION!="FAST") do={:set $DB ($DB.(":local a$a $VALUE;\r\n"));:set $VALUE ("\$a".($Array2->("$VALUE")));};};
+:set $DB ($DB.(":set ($Bace->$NAME) ").$VALUE.(";\r\n"));
+};};
+:if ([:len $ca]<256) do={:set ($CACHE->("$ca")) $DB;};
+:return $DB;
+};
+:set ($OSAMA->("ARRAY2TXT")) do={
+:global OSAMA;:global CACHE;
+:local LN [:len [:tostr $Array]];
+:if ($LN<128) do={:local ca (("ARRAY2TXT-").("$Bace").("-").("$Table").("-").[:len $Array].[:tostr $Array]);:if (($CACHE->("$ca"))~("[:]")) do={:return ($CACHE->("$ca"));};};
+:if ([:len $Bace]=0) do={:set $Bace ("DATABACE");};
+:local DB (("{:global \"$Bace\";").[($OSAMA->("TOARRAY/TXT")) Name=$Bace]);
+:if ([:len $Table]!=0) do={:if (!($Table~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24"))) do={:set $Table [($OSAMA->("ENCODEALL")) S=$Table S2=("\\")];};:set $DB ($DB.[($OSAMA->("TOARRAY/TXT")) Name=("(\$\"$Bace\"->(\"$Table\"))")]);};
+:if ([:len $Table]!=0) do={:set $DB ($DB.[($OSAMA->("TOARRAY/TXT/ARR")) Array=$Array OPTION=$OPTION Bace=("\$\"$Bace\"->(\"$Table\")")]);} else={:set $DB ($DB.[($OSAMA->("TOARRAY/TXT/ARR")) Array=$Array OPTION=$OPTION  Bace=("\$\"$Bace\"")]);};
+:set $DB ($DB.("}"));
+:if ([:len $ca]<1024) do={:set ($CACHE->("$ca")) $DB;};
+:return $DB;
+};
+:set ($OSAMA->("SAVE/FILE22")) do={
+:global OSAMA;:global CACHE;:local fname $Name;:local DB "";
+:if ([:len $Bace]=0) do={:set $Bace ("DATABACE");};
+:if ([:len $Table]!=0) do={:if (!($Table~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24"))) do={:set $Table [($OSAMA->("ENCODEALL")) S=$Table S2=("\\")];};} else={ };
+:if ([:len $fname]=0) do={:if ([:len $Table]!=0) do={:set $fname ("$Bace/$Table.txt");} else={:set $fname ("$Bace/DB.txt");};};
+:set $DB [($OSAMA->("ARRAY2TXT")) Table=$Table OPTION=$OPTION Bace=$Bace Array=$Array];
+:local fnamef (false);
+:do {:if ([:len ($OSAMA->("SAVE/FILE")->("$fname"))]>0) do={/file set ($OSAMA->("SAVE/FILE")->("$fname")) contents=$DB;:return (true);};} on-error={ };
+:do {[/file find [:if (name=$fname) do={:set $fnamef (true);:set ($OSAMA->("SAVE/FILE")->("$fname")) $".id";set $".id" contents=$DB;:return (true);}]];} on-error={ };
+:if (!($fnamef)) do={:execute script=("{:global OSAMA;:local fname (\$OSAMA->(\"SAVE/FILE\")->(\"fn-$NameS\"));:do {/tool fetch address=127.0.0.1 src-path=\"hotspot/alogin.html\" mode=ftp dst-path=(\"\$fname\");} on-error={}};");:delay 3s;:do {:execute script=("{:global OSAMA;:return (\$OSAMA->(\"SAVE/FILE\")->(\"$NameS\"));}") file=("$fname");:return (true);} on-error={:return (false);};
+} else={:return (true);};
+};
+:set ($OSAMA->("SAVE/FILE")) do={
+:global OSAMA;:local fname $Name;:local Table2 $Table;
+:if ([:len $Bace]=0) do={:set $Bace ("DATABACE");};:local End (";:set \$\"$Bace\" \$A;};");:local Sup ("\$\"$Bace\"");
+:if ([:len $Table]!=0) do={:if (!($Table~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24"))) do={:set $Table [($OSAMA->("ENCODEALL")) S=$Table S2=("\\")];};:set $Sup ("\$\"$Bace\"->(\"$Table\")");:set $End (";:set (\$\"$Bace\"->(\"$Table\")) \$A;};");} else={ };
+:if ([:len $fname]=0) do={:if ([:len $Table]!=0) do={:set $fname ($Bace.("_").$Table2.("_SCRIPT"));:set $Sup ("\$\"$Bace\"->(\"$Table\")");:set $End (";:set (\$\"$Bace\"->(\"$Table\")) \$A;};");} else={:set $fname ($Bace.("_SCRIPT"));}};
+:local fnamef $fname;
+:if (!($fname~("^[_\3A\2C\2E\2A0-9A-Za-z]{1,}\24"))) do={:set $fname [($OSAMA->("ENCODEALL")) S=$fname ];};
+:if ([:len ($OSAMA->("SAVE/FILE")->("$fname"))]>0) do={:delay 2s;};
+:set ($OSAMA->("SAVE/FILE")->("$fname")) ({"Table"=$Table;"Name"=$Name;"Bace"=$Bace;"OPTION"=$OPTION;"Array"=$Array;"End"=$End;"Sup"=$Sup;});
+:do {:execute script=("{:local Array (\$OSAMA->(\"SAVE/FILE\")->(\"$fname\")->(\"Array\"));:local End (\$OSAMA->(\"SAVE/FILE\")->(\"$fname\")->(\"End\"));:local Sup (\$OSAMA->(\"SAVE/FILE\")->(\"$fname\")->(\"Sup\"));:local Name (\$OSAMA->(\"SAVE/FILE\")->(\"$fname\")->(\"Name\"));:local Table (\$OSAMA->(\"SAVE/FILE\")->(\"$fname\")->(\"Table\"));:local Bace (\$OSAMA->(\"SAVE/FILE\")->(\"$fname\")->(\"Bace\"));:local OPTION (\$OSAMA->(\"SAVE/FILE\")->(\"$fname\")->(\"OPTION\"));:local a (\"{:global \\\"\$Bace\\\";:if ([:typeof \\\$\\\"\$Bace\\\"]!=\\\"array\\\") do={:set \\\$\\\"\$Bace\\\" [:toarray \\\"\\\"];};:if ([:typeof (\\\$\\\"\$Bace\\\"->(\\\"\$Table\\\"))]!=\\\"array\\\"&& [:len \\\"\$Table\\\"]>0) do={:set (\\\$\\\"\$Bace\\\"->(\\\"\\\$Table\\\")) [:toarray \\\"\\\"];};:local A \");:local b [(\$OSAMA->(\"TOARRAYTXT2\")) OPTION=(\"\$OPTION\") A=\$Array];:put (\$a.(\"\\\\\\r\\n\").\$b.(\"\\\\\\r\\n\").\$End);:set (\$OSAMA->(\"SAVE/FILE\")->(\"$fname\"));:return (\"\");}") file=("$fnamef");} on-error={
+# :do {[($OSAMA->("GET/FILE")) Bace=$fnamef Table=($Table2.".txt")];} on-error={ };
+};
+:return (true);
+};
+:set ($OSAMA->("SAVE/SCRIPT")) do={
+:global OSAMA;
+:local a [($OSAMA->("SAVE/FILE")) Name=("$Name") Bace=("$Bace") Array=$Array OPTION=("$OPTION") Table=("$Table")];
+:return $a;
+};
+:set ($OSAMA->("LOAD/SCRIPT")) do={
+:global OSAMA;:local fname $Name;:local Tablen $Table;
+:if ([:len $Bace]=0) do={:set $Bace ("DATABACE");};:local End (";:set \$\"$Bace\" \$A;};");:local Sup ("\$\"$Bace\"");
+:if ([:len $Table]!=0) do={:if (!($Table~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24"))) do={:set $Table [($OSAMA->("ENCODEALL")) S=$Table S2=("\\")];};:set $Sup ("\$\"$Bace\"->(\"$Table\")");:set $End (";:set (\$\"$Bace\"->(\"$Table\")) \$A;};");} else={ };
+:if ([:len $fname]=0) do={:if ([:len $Table]!=0) do={:set $fname ($Bace.("_").$Table.("_SCRIPT"));:set $Sup ("\$\"$Bace\"->(\"$Table\")");:set $End (";:set (\$\"$Bace\"->(\"$Table\")) \$A;};");} else={:set $fname ($Bace.("_SCRIPT"));}};
+:if (!($fname~"[\\.][A-Za-z]{1,5}\$")) do={:set $fname ($fname.".txt");};
+:do {/import $fname;} on-error={:local a [($OSAMA->("SAVE/FILE")) Name=("$Name") Bace=("$Bace") Array=([],[]) OPTION=("$OPTION") Table=("$Table")];:return ([],[]);};
+:global DATABACE;:return ($DATABACE->("$Tablen"));
+};
+:set ($OSAMA->("BOOL")) do={:global OSAMA;:local t [:typeof $B];:if ([:len $T]>0) do={:foreach i,v in=$T do={:if ("$t"="$i") do={:return [$F B=$B];};};:return (false);};:local R ("BOOL/".[:tostr ("$t")]);:local F ($OSAMA->("$R"));:return [$F B=$B];};
+:set ($OSAMA->("BOOL/bool")) do={:return $B;};
+:set ($OSAMA->("BOOL/nil")) do={:return (false);};
+:set ($OSAMA->("BOOL/nothing")) do={:return (false);};
+:set ($OSAMA->("BOOL/array")) do={:return ([:len $B] != 0);};
+:set ($OSAMA->("BOOL/num")) do={:return ($B != 0);};
+:set ($OSAMA->("BOOL/ip")) do={:return ($B != 0.0.0.0);};
+:set ($OSAMA->("BOOL/ip-prefix")) do={:return ($B != 0.0.0.0/0);};
+:set ($OSAMA->("BOOL/ip6")) do={:return ($B != (::));};
+:set ($OSAMA->("BOOL/ip6-prefix")) do={:return ($B != (::/0));};
+:set ($OSAMA->("BOOL/str")) do={:return (!((("$B")~("^[ ]*(0|[Ff][aA][lL][sS][eE]|[nN][oO]|[nN][iIuU][Ll]{1,2}|[nN]othing|[nN][AaOo][nN][eE]{0,1})[ ]*\$"))||([:len $B]=0)));};
+:set ($OSAMA->("BOOL/time")) do={:return ($B != 00:00:00);};
+:set ($OSAMA->("BOOL/code")) do={:return (true);};
+:set ($OSAMA->("BOOL/function")) do={:return (true);};
+:set ($OSAMA->("BOOL/lookup")) do={:return (true);};
+:set ($OSAMA->("BOOL/id")) do={:return (true);};
+:set ($OSAMA->("ARRAY")) do={:if ([:typeof $A1]!="array") do={:if ([:typeof $A2]!="array") do={:if ([:typeof $A3]!="array") do={:if ([:typeof $A4]!="array") do={:if ([:typeof $A5]!="array") do={:return [:pick ($A1,$A2,$A3,$A4,$A5,[]) 0];} else={:return $A5;};} else={:return $A4;};} else={:return $A3;};} else={:return $A2;};} else={:return $A1;};};
+:set ($OSAMA->("ARRAY/COPY")) do={:global OSAMA;:if ([:typeof $A]="array") do={:local Ar [:toarray ""];:foreach n,v in=$A do={:if ([:typeof $v]="array") do={:set ($Ar->$n) [($OSAMA->("ARRAY/COPY")) A=$v];} else={:local v2 ([($OSAMA->("BOOL")) B=($A1->$n)],[($OSAMA->("BOOL")) B=($A1->$n) T=("array")],[($OSAMA->("BOOL")) B=($A2->$n) T=("array")],[($OSAMA->("BOOL")) B=($A3->$n) T=("array")],[($OSAMA->("BOOL")) B=($A4->$n) T=("array")],[($OSAMA->("BOOL")) B=($A5->$n) T=("array")]);:foreach nn,vv in=$v2 do={:if ($vv) do={:set ($Ar->$n) $v;}}}};:return $Ar;};:return $A;};
+:set ($OSAMA->("ARRAY/ADDN")) do={:global OSAMA;:local Ar [:toarray ""];:foreach n,v in=$A1 do={:if ([:typeof $v]="array") do={:set ($Ar->$n) [($OSAMA->("ARRAY/ADDN")) A1=($A1->$n) A2=($A2->$n) A3=($A3->$n) A4=($A4->$n) A5=($A5->$n) ]} else={:set ($Ar->$n) $v;};};:foreach n,v in=$A2 do={:if ([:typeof $v]="array") do={:set ($Ar->$n) [($OSAMA->("ARRAY/ADDN")) A1=($A1->$n) A2=($A2->$n) A3=($A3->$n) A4=($A4->$n) A5=($A5->$n) ]} else={:set ($Ar->$n) $v;};};:foreach n,v in=$A3 do={:if ([:typeof $v]="array") do={:set ($Ar->$n) [($OSAMA->("ARRAY/ADDN")) A1=($A1->$n) A2=($A2->$n) A3=($A3->$n) A4=($A4->$n) A5=($A5->$n) ]} else={:set ($Ar->$n) $v;};};:foreach n,v in=$A4 do={:if ([:typeof $v]="array") do={:set ($Ar->$n) [($OSAMA->("ARRAY/ADDN")) A1=($A1->$n) A2=($A2->$n) A3=($A3->$n) A4=($A4->$n) A5=($A5->$n) ]} else={:set ($Ar->$n) $v;};};:foreach n,v in=$A5 do={:if ([:typeof $v]="array") do={:set ($Ar->$n) [($OSAMA->("ARRAY/ADDN")) A1=($A1->$n) A2=($A2->$n) A3=($A3->$n) A4=($A4->$n) A5=($A5->$n) ]} else={:set ($Ar->$n) $v;};};:return $Ar;};
+:set ($OSAMA->("ARRAY/ADD")) do={:global OSAMA;:local Ar [:toarray ""];:foreach n,v in=[($OSAMA->("ARRAY/ADDN")) A1=$A1 A2=$A2 A3=$A3 A4=$A4 A5=$A5 ] do={:if ([:typeof $v]="array") do={:set ($Ar->$n) [($OSAMA->("ARRAY/ADD")) A1=($A1->$n) A2=($A2->$n) A3=($A3->$n) A4=($A4->$n) A5=($A5->$n)];} else={:set ($Ar->$n) $v;};};:return $Ar;};
+:set ($OSAMA->("TOID")) do={:local CACHE;:local ca (("TOID-").$1.$0);:local a ($CACHE->"$ca");:if (any ($a)) do={:return $a;};:set $a [:toid ("$1")];:set ($CACHE->"$ca") $a;:return $a;};
+:set ($OSAMA->("ISID")) do={:local a [:toid ($0,$1)];:return ([:len $a]>0);:return ([:tostr $a]~("^[\\*][0-9A-Fa-f]{1,8}\$"));};
+:set ($OSAMA->("ISFOUND")) do={:local CACHE;:local ca (("ISFOUND-").$S1.("-F-").$S2);:local a ($CACHE->"$ca");:if (any ($a)) do={:return $a;};:set $a ([:len [:find $S1 $S2]]);:set ($CACHE->"$ca") $a;:return $a;};
+:set ($OSAMA->("HEADER/IF")) do={:local EndIf "";:if ("$endif"!="no") do={:set $EndIf ("\$(endif)");};:return (("\$(if $S2 == '$S3')").[:tostr $S1 ].$EndIf);};
+:set ($OSAMA->("HEADER/ELIF")) do={:return (("\$(elif $S2 == '$S3')").[:tostr $S1 ]);};
+:set ($OSAMA->("MONTHS")) (("jan"),("feb"),("mar"),("apr"),("may"),("jun"),("jul"),("aug"),("sep"),("oct"),("nov"),("dec"));
+:set ($OSAMA->("MONTHSUPPER")) (("Jan"),("Feb"),("Mar"),("Apr"),("May"),("Jun"),("Jul"),("Aug"),("Sep"),("Oct"),("Nov"),("Dec"));
+:set ($OSAMA->("HEADER/JSON")) ("\$(if http-header == 'Access-Control-Allow-Origin')*\$(endif)\$(if http-header == 'Cross-Origin-Resource-Policy')cross-origin\$(endif)\$(if http-header == 'Cache-Control')no-store\$(endif)\$(if http-header == 'Content-Type')application/json\$(endif)");
+:set ($OSAMA->("HEADER/JS")) ("//\$(if http-header == 'Cache-Control')public, max-age=300, immutable\$(endif)\$(if http-header == 'Content-Type')text/javascript\$(endif)\$(if http-header == 'Access-Control-Allow-Origin')*\$(endif)\$(if http-header == 'Cross-Origin-Resource-Policy')cross-origin\$(endif)\$(if http-header == 'Content-Type')text/javascript\$(endif)\r\n");
+:set ($OSAMA->("HEX"))   (("0"),("1"),("2"),("3"),("4"),("5"),("6"),("7"),("8"),("9"),("A"),("B"),("C"),("D"),("E"),("F"));
+:set ($OSAMA->("TOJSON")) do={:global CACHE;:global OSAMA;:local ln [:len $A];:local ca ("TOJSON-".$ln.("-").[:tostr $A]);:if ([:len ($CACHE->("$ca"))]>0) do={:return ($CACHE->("$ca"));};:local i [:len $A];:local j 0;:local q ("\"");:local e1 (":");:local s1 (",");:local p1 ("[");:local p2 ("]");:local b1 ("{");:local b2 ("}");:local a (false);:if ($i>0) do={:if ([:typeof $A]!="array") do={:if ([:typeof $A]="num") do={:return  ($p1.$A.$p2);};:return ($p1.$q.[($OSAMA->("ENCODE")) S=$A].$q.$p2);};:foreach n,v in=(($A->0),[:pick $A ($i-1) ($i)]) do={:if ([:typeof $n]="num"||"$n"~("^[0-9]*\$")) do={:set $a (true);};};} else={:return ($p1.$p2);};:foreach n,v in=$A do={:if (!($a)) do={:set $s ($s.$q.$n.$q.$e1);};:if ([:typeof $v]="num") do={:set $s ($s.$v.$s1);} else={:if ([:typeof $v]!="array") do={:set $s ([:tostr $s].$q.[($OSAMA->("ENCODE")) S=$v ].$q.$s1)} else={:set $s ($s.[($OSAMA->("TOJSON")) A=$v D=(1+$D)].$s1);};};};:local L [:len $s];:if ([:pick $s ($L-1)]=$s1) do={:set $s [:pick $s 0 ($L-1)];};:local O $s;:if (!($a)) do={:set $s ($b1.[:tostr $s].$b2);} else={:set $s ($p1.[:tostr $s].$p2);};:if ([:len $s]<254) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $s;};:return $s;};
+:set ($OSAMA->("TOARRAYTXT")) do={:global CACHE;:global OSAMA;:local ln [:len $A];:local ca ("TOARRAYTXT-".$ln.("-").[:tostr $A]);:if ([:len ($CACHE->("$ca"))]>0) do={:return ($CACHE->("$ca"));};:local Name "";:local i [:len $A];:local j 0;:local q ("\"");:local e1 ("=");:local s1 (";");:local s12 (",");:local p1 ("({");:local p2 ("})");:local p11 ("(");:local p22 (")");:local b1 ("({");:local b2 ("})");:local a (false);:if ($i>0) do={:if ([:typeof $A]!="array") do={:if ([:typeof $A]="num") do={:return  ($p11.$A.$p22);};:return ($p11.$q.[($OSAMA->("ENCODEALL")) S2=("\\") S=$v ].$q.$p22);};:foreach n,v in=(($A->0),[:pick $A ($i-1) ($i)]) do={:if ([:typeof $n]="num") do={:set $a (true);};};} else={:return ($p11."[],[]".$p22);};:foreach n,v in=$A do={:if ([:typeof $n]!="num") do={:if (!($n~("^[0-9A-Za-z]{1,}\$"))) do={:set $s ($s.$q.("\\").[($OSAMA->("ENCODEALL"))  S=("$n")].$e1);} else={:set $s ($s.$q.$n.$q.$e1);};};:if ([:typeof $v]="num") do={:set $s ($s.$v.$s1);} else={:if ([:typeof $v]!="array") do={:set $s ($s.$p11.$q.[($OSAMA->("ENCODEALL")) S2=("\\") S=$v ].$q.$p22.$s1)} else={:local aa [($OSAMA->("TOARRAYTXT")) A=$v D=(1+$D)];:set $s ($s.$aa.$s1.("\\\r\n"));};};};:if ([:len $s]<64) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $s;};:return $s;};
+:set ($OSAMA->("TOARRAYTXT2")) do={:global CACHE;:global OSAMA;:local ln [:len $A];:local ca ("TOARRAYTXT2-".$ln.("-").[:tostr $A]);:if ([:len ($CACHE->("$ca"))]>0) do={:return ($CACHE->("$ca"));};:local q ("\"");:local e1 ("=");:local s1 (";");:local s2 (",");:local p1 ("(");:local p2 (")");:local b1 ("{");:local b2 ("}");:local q2 ("\\");:local s;:local O [:toarray ""];:if ([:typeof $A]!="array") do={:if ($A~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24")) do={:set $s ($q.[:tostr $A].$q);} else={:set $s ($p1.$q.[($OSAMA->("ENCODEALL")) S=[:tostr $A] S2=$q2].$q.$p2);};} else={:foreach n,v in=$A do={:local N $n;:if ([:typeof $n]!="num") do={:if ($n~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24")) do={:set $N ($q.$n.$q);} else={:set $N ($q.[($OSAMA->("ENCODEALL")) S=("$n") S1=$q2]);};};:local TV [:typeof $v];:if ($TV="num") do={:set ($O->$N) $v;} else={:if ($TV!="array") do={:if ($v~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24")) do={:set ($O->$N) ($q.$v.$q);} else={:set ($O->$N) ($p1.$q.[($OSAMA->("ENCODEALL")) S=[:tostr $v] S2=$q2].$q.$p2);};} else={:set ($O->$N) [($OSAMA->("TOARRAYTXT2")) A=$v ];};};};:set $s ($p1.$b1.[:tostr $O ].$b2.$p2);};:if ([:len $s]<124) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $s;};:return $s;};
+:set ($OSAMA->("TOARRAYTXT3")) do={:global CACHE;:global OSAMA;:local q ("\"");:local e1 ("=");:local s1 (";");:local s2 (",");:local p1 ("(");:local p2 (")");:local b1 ("{");:local b2 ("}");:local q2 ("\\");:local O [:toarray ""];:foreach n,v in=$A do={:local N $n;:if ([:typeof $n]!="num") do={:if ($n~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24")) do={:set $N ($q.$n.$q);} else={:set $N ($q.[($OSAMA->("ENCODEALL")) S=("$n") S1=$q2]);};};:local TV [:typeof $v];:if ($TV="num") do={:set ($O->$N) $v;} else={:if ($TV!="array") do={:if ($v~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24")) do={:set ($O->$N) ($q.$v.$q);} else={:set ($O->$N) ($p1.$q.[($OSAMA->("ENCODEALL")) S=[:tostr $v] S2=$q2].$q.$p2);};} else={:set ($O->$N) [($OSAMA->("TOARRAYTXT2")) A=$v ];};};:set $i ($i+1);};:return ($p1.$b1.[:tostr $O ].$b2.$p2);};
+:set ($OSAMA->("TOARRAYTXT4")) do={:global CACHE;:global OSAMA;:local q ("\"");:local e1 ("=");:local s1 (";");:local s12 (",");:local p1 ("(");:local p2 (")");:local b1 ("{");:local b2 ("}");:local L [:len $A];:local TA [:typeof $A];:if ($L>0) do={:if ($TA!="array") do={:if ($TA="num") do={:put ($p1.$A.$p2.("\\"));:return ("");};:if ($v~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24")) do={:put ($p1.$q.$v.$q.$p2.("\\"));} else={:put ($p1.$q.[($OSAMA->("ENCODEALL")) S2=("\\") S=$v ].$q.$p2.("\\"));};:return ("");};} else={:put ($p1.("[],[]").$p2);:return ("");};:local A2 [($OSAMA->("GETONLYNUM")) A=$A];:local L2 [:len $A2];:for i from=0 to=$L2 do={:local n ($A2->("N")->$i);:local v ($A2->("V")->$i);:local TV [:typeof $v];:if ($TV="num") do={:put ($v.$s1);} else={:if ($TV!="array") do={:if ($v~("^[\3A\2C\2E\2A0-9A-Za-z]{1,}\24")) do={:put ($n2.$v2.$p1.$q.[($OSAMA->("ENCODEALL")) S2=("\\") S=$v ].$q.$p2.$s1.("\\"))} else={:put ($n2.$v2.$p11.$q.$v.$q.$p22.$s1.("\\"))}} else={:local aa [($OSAMA->("TOARRAYTXT2")) A=$v  n2=$n2 v2=$v2 D=(1+$D)];:put ($s1.("\\"));};:set $n2;:set $v2;};};:put ("})\\");:return (";");};
+:set ($OSAMA->("REPLACE")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("REPLACE-$S1-$S2-$S3")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local o;:local L [:len $S2];:local j 0;:local i (0-$L);:if ($L=0) do={:return $S1 ;};:while ([:set $i [:find $S1 $S2 ($i+$L-1)];([:len $i]>0)]) do={:set $o ($o.([:pick $S1 $j $i]).$S3);:set $j ($i+$L);};:set $o ($o.([:pick $S1 $j [:len $S1]]));:local La [:len $ca];:if ($La<1024) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $o;};:return $o;};
+:set ($OSAMA->("REPLACEALL")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("REPLACEALL-$S1".[:tostr $S2]."-".[:tostr $S3])];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local o ;:local L [:len $S2];:local j 0;:local i (0-$L);:if ($L=0) do={:return $S1 ;};:local z "";:local R [:toarray ""];:foreach n,x in=$S2 do={:set ($R->$x) ((($S3->$n),$S3,(""))->0);:set $z ($z."|".$x);};:set $z ("(".[:pick $z 1 [:len $z]].")");:local A [($OSAMA->("REGEXP")) S=$S1 R=$z];:foreach n,x in=$A do={:set $o ($o.([:pick $S1 $j ($x->1)]).($R->($x->0)));:set $j (($x->2)+0);};:set $o ($o.([:pick $S1 $j [:len $S1]]));:local La [:len $ca];:if ($La<1024) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $o;};:return $o;};
+:set ($OSAMA->("SPLIT")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("SPLIT-$S1-$S2-$S3")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local o ;:local L [:len $S2];:local j 0;:local i (0-$L);:if ($L=0) do={:return $S1 ;};:while ([:set $i [:find $S1 $S2 ($i+$L-1)];([:len $i]>0)]) do={:set $o ($o,([:pick $S1 $j $i]));:set $j ($i+$L);};:set $o ($o,([:pick $S1 $j [:len $S1]]));:local La [:len $ca];:if ($La<1024) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $o;};:return $o;};
+:set ($OSAMA->("SPLITALL")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("SPLITALL-$S1-$S2".[:tostr $S3])];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local o ;:local L [:len $S2];:local j 0;:local i (0-$L);:if ($L=0) do={:return $S1 ;};:local z "";:foreach n,x in=$S2 do={:set $z ($z."|".$x);};:set $z ("(".[:pick $z 1 [:len $z]].")");:local A [($OSAMA->("REGEXP")) S=$S1 R=$z];:foreach n,x in=$A do={:set $o ($o,([:pick $S1 $j ($x->1)]));:set $j (($x->2)+0);};:set $o ($o,([:pick $S1 $j [:len $S1]]));:local La [:len $ca];:if ($La<1024) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $o;};:return $o;};
+:set ($OSAMA->("QUERY")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("QUERY-$URL")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local q [:toarray ""];:if ([:len [:find $URL ("\?")]]>0) do={:set $URL [:pick $URL ([:find $URL ("\?")]+1) [:len $URL]];};:if ("$URL"~"amp") do={:set $URL [($OSAMA->("REPLACE")) S1=$URL S2=("&amp;") S3=("&")];};:foreach v in=[($OSAMA->("SPLIT")) S1=$URL S2=("&")] do={:local p  [($OSAMA->("SPLIT")) S1=$v S2=("=")];:if ([:len ($q->($p->0))]>0) do={:set ($q->($p->0)) (($q->($p->0)),($p->1));} else={:set ($q->($p->0)) ($p->1);};};:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $q;:return $q;};
+:set ($OSAMA->("REGEXP2")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("REGEXP2-$S-$R-$NOT-$COUNT-$OPTION-$MAX-$REMOVE-",$S1,$S2)];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local O;:local L [:len $S];:local MIN (true);:if ([:len $MAX]>0) do={:set $MIN ([:len [:find (("no"="$MAX"),("0"="$MAX"),("false"="$MAX"),("False"="$MAX")) (1=1)]] != 0);};:if (($S~("$R")) && [:len $R]>0) do={:local NO (true); :local C $L; :if ([:len ("$NOT")]=0) do={:set $NO (false);}; :if ([:len ("$COUNT")]>0) do={:set $C [:tonum $COUNT];}; :local I 0;:local J 1;:local T [:pick $S $I $L];:while (($L>=$I) && ($L>=$J) && ($C>0)) do={:set $T [:pick $S $I $J];:while (($L>=$J) && (!($T~("$R")))) do={:set $J ($J+1);:set $T [:pick $S $I $J];};:set $MAX $I;:while (($L>=$I) && ($T~("$R"))) do={:set $I ($I+1);:set $T [:pick $S $I $J];};:if (!($T~("$R"))) do={:set $T [:pick $S ($I-1) $J];};:if ((($NO) && (!($T~("$NOT"))) && ($T~("$R"))) || ((!($NO)) && ($T~("$R")))) do={:if (!($MIN)) do={:local TT [:pick $S ($I-1) $J];:if (($TT~("$R"))) do={:while (($L>=$I) && ($TT~("$R")) && ($I>=$MAX)) do={:set $I ($I-1);:set $TT [:pick $S $I $J];};:set $T [:pick $S ($I+1) $J];:set $I ($J-[:len $T]+1);:if ($J<$I) do={:set $I $J;};};:if ("$OPTION"="") do={:set $O ($O,({$T,($I-1),$J}));} else={:if ("$OPTION"="SPLIT") do={:set $O ($O,$T);} else={:if ("$OPTION"="INDEX") do={:set $O ($O,($I-1));} else={:if ("$OPTION"="REPLACE") do={:set $O ([:pick $S 0 ($I-1)].((($S2->("$T")),$T)->0).[:pick $S $J [:len $S]]);:set $J ($I+[:len ($S2->("$T"))]);} else={:set $O ($O,({$T,($I-1),$J}));};};};};:set $I $J;:set $C ($C - 1);};};:if (!(([:pick $S $I $L])~("$R"))) do={:local La [:len $O];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;};:return $O;};};};:local La [:len $O];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;};:return $O;}
+:set ($OSAMA->("REGEXP")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("REGEXP-$S-$R-$NOT-$COUNT-$OPTION-$MAX-",$S1,$S2)];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local O;:local L [:len $S];:local MIN (true);:if ([:len $MAX]>0) do={:set $MIN ([:len [:find (("no"="$MAX"),("0"="$MAX"),("false"="$MAX"),("False"="$MAX")) (1=1)]] != 0);};:if (($S~("$R")) && [:len $R]>0) do={:local NO (true); :local C $L; :if ([:len ("$NOT")]=0) do={:set $NO (false);}; :if ([:len ("$COUNT")]>0) do={:set $C [:tonum $COUNT];}; :local I 0;:local J 1;:local T [:pick $S $I $L];:while (($L>=$I) && ($L>=$J) && ($C>0)) do={:set $T [:pick $S $I $J];:while (($L>=$J) && (!($T~("$R")))) do={:set $J ($J+1);:set $T [:pick $S $I $J];};:set $MAX $I;:while (($L>=$I) && ($T~("$R"))) do={:set $I ($I+1);:set $T [:pick $S $I $J];};:if (!($T~("$R"))) do={:if ($MIN) do={:set $T [:pick $S ($I-1) $J];} else={:set $T [:pick $S $MAX $J];};:if ((($NO) && (!($T~("$NOT"))) && ($T~("$R"))) || ((!($NO)) && ($T~("$R")))) do={:if (!($MIN)) do={:set $I ($MAX+1);};:if ("$OPTION"="") do={:set $O ($O,({$T,($I-1),$J}));} else={:if ("$OPTION"="SPLIT") do={:set $O ($O,$T);} else={:if ("$OPTION"="INDEX") do={:set $O ($O,($I-1));} else={:if ("$OPTION"="REPLACE") do={:set $O ([:pick $S 0 ($I-1)].((($S2->("$T")),$T)->0).[:pick $S $J [:len $S]]);:set $J ($I+[:len ($S2->("$T"))]);} else={:set $O ($O,({$T,($I-1),$J}));};};};};:if (!($MIN)) do={:set $I $J;};:set $C ($C - 1);};};:if (!(([:pick $S $I $L])~("$R"))) do={:local La [:len $O];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;};:return $O;};};};:local La [:len $O];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;};:return $O;}
+:set ($OSAMA->("DECODE")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("DECODE-$S")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local SC ("$S");:if ([:len ($OSAMA->("DECODE/STR"))]=0) do={:local STR [:toarray ""];:foreach i in=($OSAMA->"HEX") do={:foreach j in=($OSAMA->"HEX") do={:local P [:tostr [[[:parse (":return (\"\\$i$j\");")]]]];:local V ("%$i$j");:set ($STR->("$V")) $P;};};:set ($OSAMA->("DECODE/STR")) $STR;};:local R ("[%][0-9A-F][0-9A-F]");:set $S ((" ").$S);:local L [:len $S];:if (("$S")~("$R") && $L>1) do={:local I (-1);:local J (-1 - ($L*2));:local STR ($OSAMA->("DECODE/STR"));:while (("$S")~("$R") && $L>$J) do={:local F [:find $S ("%") $I];:if ([:len $F ]>0) do={:local P [:pick $S $F ($F+3)];:if (("$P")~("^$R")) do={:set $S ([:pick $S 0 $F].($STR->("$P")).[:pick $S ($F+3) $L]);};} else={:set $J ($J+1);};:set $I ($F+1);};};:set $S [:pick $S 1 ($L*2)];:local La [:len $SC];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $S;};:return $S;};
+:set ($OSAMA->("ENCODE")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("ENCODE-$S")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local SC ("$S");:if ([:len ($OSAMA->("ENCODE/STR"))]=0) do={:local STR [:toarray ""];:foreach i in=($OSAMA->"HEX") do={:foreach j in=($OSAMA->"HEX") do={:local P [:tostr [[[:parse (":return (\"\\$i$j\");")]]]];:local V ("%$i$j");:set ($STR->("$P")) $V;};};:set ($OSAMA->("ENCODE/STR")) $STR;};:local R ("[\\.0-9A-Za-z]");:local L [:len $S];:local O;:if ($L>8) do={:local ii 0;:for i from=8 to=($L+8) step=8 do={:set $O ($O.[($OSAMA->("ENCODE")) S=[:pick  $S $ii $i] S2=$S2]);:set $ii $i;};:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;:return $O;};:if ($L>0) do={:local STR ($OSAMA->("ENCODE/STR"));:for i from=0 to=($L-1) do={:local a [:pick $S $i];:if (!(("$a")~("$R"))) do={:set $O ($O.($STR->("$a")));} else={:set $O ($O.("$a"));};};};:local La [:len $SC];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;};:return $O;};
+:set ($OSAMA->("ENCODEALL")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("ENCODEALL-$S-$S1-$S2")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local SC ("$S");:if ([:len ($OSAMA->("ENCODEALL/STR"))]=0) do={:local STR [:toarray ""];:foreach i in=($OSAMA->"HEX") do={:foreach j in=($OSAMA->"HEX") do={:local P [:tostr [[[:parse (":return (\"\\$i$j\");")]]]];:local V ("$i$j");:set ($STR->("$P")) $V;};};:set ($OSAMA->("ENCODEALL/STR")) $STR;};:local R ("[\\.0-9A-Za-z]");:local L [:len $S];:local O;:if ($L>8) do={:local ii 0;:for i from=8 to=($L+8) step=8 do={:set $O ($O.[($OSAMA->("ENCODEALL")) S=[:pick  $S $ii $i] S2=$S2]);:set $ii $i;};:set $O ($S1.$O);:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;:return $O;};:if ($L>0) do={:local STR ($OSAMA->("ENCODEALL/STR"));:for i from=0 to=($L-1) do={:local a [:pick $S $i];:if (!(("$a")~("$R"))) do={:set $O ($O.$S2.($STR->("$a")));} else={:set $O ($O.$S2.($STR->("$a")));};};};:local La [:len $SC];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set $O ($S1.$O);:set ($CACHE->("$ca")) $O;};:return $O;};
+:set ($OSAMA->("DECODE2")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("DECODE2-$S")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local SC ("$S");:if ([:len ($OSAMA->("DECODE/STR2"))]=0) do={:local STR [:toarray ""];:foreach i in=($OSAMA->"HEX") do={:foreach j in=($OSAMA->"HEX") do={:local P [:tostr [[[:parse (":return (\"\\$i$j\");")]]]];:local V ("&#$i$j;");:set ($STR->("$V")) $P;};};:set ($OSAMA->("DECODE/STR2")) $STR;};:local R ("[&#][0-9A-F][0-9A-F][;]");:set $S ((" ").$S);:local L [:len $S];:if (("$S")~("$R") && $L>1) do={:local I (-1);:local J (-1 - ($L*2));:local STR ($OSAMA->("DECODE/STR2"));:while (("$S")~("$R") && $L>$J) do={:local F [:find $S ("&#") $I];:if ([:len $F ]>0) do={:local P [:pick $S $F ($F+5)];:if (("$P")~("^$R")) do={:set $S ([:pick $S 0 $F].($STR->("$P")).[:pick $S ($F+5) $L]);};} else={:set $J ($J+1);};:set $I ($F+1);};};:set $S [:pick $S 1 ($L*5)];:local La [:len $SC];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $S;};:return $S;};
+:set ($OSAMA->("ENCODE2")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("ENCODE2-$S")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local SC ("$S");:if ([:len ($OSAMA->("ENCODE/STR2"))]=0) do={:local STR [:toarray ""];:foreach i in=($OSAMA->"HEX") do={:foreach j in=($OSAMA->"HEX") do={:local P [:tostr [[[:parse (":return (\"\\$i$j\");")]]]];:local V ("&#$i$j;");:set ($STR->("$P")) $V;};};:set ($OSAMA->("ENCODE/STR2")) $STR;};:local R ("[\00-\1F\2A-\2E\30-\39\40-\5A\61-\7A]");:local L [:len $S];:local O;:local J (1-$L);:if ($L>0) do={:local STR ($OSAMA->("ENCODE/STR2"));:for i from=0 to=($L-1) do={:local a [:pick $S $i];:if (!(("$a")~("$R"))) do={:set $O ($O.($STR->("$a")));} else={:set $O ($O.("$a"));};};};:local La [:len $SC];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;};:return $O;};
+:set ($OSAMA->("DECODE/M")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("DECODE/M-$S")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local O $S;:if ($S~"[%](24|3F|22|0D|0A)") do={:foreach i in=(("24"),("3F"),("22"),("0D"),("0A")) do={:set $O [($OSAMA->("REPLACE")) S1=$S S2=(("%").$i) S3=(("0x").$i)];};};:local La [:len $O];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;};:return $O;};
+:set ($OSAMA->("ENCODE/M")) do={:global CACHE;:global OSAMA;:local ca [:tostr ("ENCODE/M-$S")];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local O $S;:if ($S~"[0][x](24|3F|22|0D|0A)") do={:foreach i in=(("24"),("3F"),("22"),("0D"),("0A")) do={:set $O [($OSAMA->("REPLACE")) S1=$S S2=(("0x").$i) S3=(("%").$i)];};};:local La [:len $O];:if ($La<512) do={:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE;:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;};:return $O;};
+:set ($OSAMA->("ENCODE/REPLACE")) do={:global CACHE;:global OSAMA;:local ca [:tostr (("ENCODE/REPLACE-").[:tostr $S1].("-").[:tostr $S3].("-").[:tostr $S3])];:local CA ($CACHE->("$ca"));:if ([:len $CA]>0) do={:return $CA;};:local O [($OSAMA->("REPLACE")) S1=[($OSAMA->("ENCODE")) S=("$S1")] S2=("$S2") S3=("$S3")];:if ([:len [:tostr $CACHE]]>10024102) do={:set $CACHE [:toarray ""];};:set ($CACHE->("$ca")) $O;:return $O;};
+:global SERVER;:set $SERVER [:toarray ""];
+:set ($SERVER->("0")) do={:global PROFILEONLOGIN;:return [$PROFILEONLOGIN u=$u a=$a m=$m s=$s c=$c In=$In];}
+:set ($SERVER->("SERVER")) do={
+:global OSAMA;:global SERVER;:global SERVERREQUEST;:global SERVERREQUESTS;:global ROUTERTIME;
+:if (($SERVER->("JOBQUITE"))!=1) do={:quit ;};
+:if ($mes~(":64874/.server/request")) do={:local IP [:pick $mes 0 [:find $mes (" ") ]];:if ($IP~("^[0-9\\.]{6,15}\$")) do={:if ([:len  ($SERVERREQUESTS->("$IP"))]=0) do={:set  ($SERVERREQUESTS->("$IP")) $mes;:execute script=("{:global SERVERREQUEST;:global OSAMA;:global SERVERREQUESTS;:local RET;:put (\$OSAMA->(\"HEADER/JSON\"));:do {:set \$RET [\$SERVERREQUEST IP=(\"$IP\") Ti=(\"$ti\")]} on-error={:set \$RET (\"error\");};:set (\$SERVERREQUESTS->(\"$IP\"));:return \$RET;}") file=(($OSAMA->("PATH"))."/.server/$IP");};};:return (false);};
+:return (false);
+};
+:global SERVERREQUESTS;:set $SERVERREQUESTS [:toarray ""];
+:do {:foreach i in=[/file find name~("hotspotbyosama/login.html")] do={
+  :local a [/file get $i name];
+  :if ([:len ($OSAMA->("PATH"))]=0) do={ 
+    :local P [ip hotspot profile get ([find where html-directory~"hotspotbyosama"]->0) html-directory];
+    :if ([:len $P]>0) do={
+      :set ($OSAMA->("DISK")) [:pick  $P 0 [:find $P ("hotspotbyosama")]];
+    };
+  };
+};} on-error={ };
+:global SERVERDISK;:set ($OSAMA->("PATH")) (($OSAMA->("DISK"))."hotspotbyosama");
+:set ($SERVER->("memory")) do={:return (false);};
+# :set ($SERVER->("memory")) do={:return [($MACROAMING->$mes->5)];};
+:set ($SERVER->("disk")) do={:return (false)};
+:set ($SERVER->("info")) do={:return (false)};
+:set ($SERVER->("JOBQUITE")) 1;
+:global ROUTER;:set $ROUTER [:toarray ""];
+:set ($ROUTER->("GETDATA")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return [($ROUTER->("HOTSPOT")->("GETDATA")) User=$User Name=$Name];};:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return [($ROUTER->("USERMAN")->("GETDATA")) User=$User Name=$Name];};:return [:toarray ""];};
+:set ($ROUTER->("GETPROFILE")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return [($ROUTER->("HOTSPOT")->("GETPROFILE")) User=$User Name=$Name];};:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return [($ROUTER->("USERMAN")->("GETPROFILE")) User=$User Name=$Name];};:return [:toarray ""];};
+:set ($ROUTER->("GETUSERDAYS")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return [($ROUTER->("HOTSPOT")->("GETUSERDAYS")) User=$User OPTION=$OPTION Name=$Name];};:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return [($ROUTER->("USERMAN")->("GETUSERDAYS")) User=$User OPTION=$OPTION Name=$Name];};:return ("");};
+:set ($ROUTER->("GETLIMIT")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return [($ROUTER->("HOTSPOT")->("GETLIMIT")) User=$User Name=$Name];};:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return [($ROUTER->("USERMAN")->("GETLIMIT")) User=$User Name=$Name];};:return ("");};
+:set ($ROUTER->("GETPAYEMNTS")) do={:global ROUTER;:global OSAMA;[($ROUTER->("HOTSPOT")->("GETPAYEMNTS"))];[($ROUTER->("HOTSPOT")->("GETPAYEMNT"))];};
+:set ($ROUTER->("GETPAYEMNT")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:global ALLPAYMENTS;:if ([:typeof $ALLPAYMENTS]!="array") do={:set $ALLPAYMENTS [:toarray ""];};:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return [($ROUTER->("HOTSPOT")->("GETPAYEMNT")) User=$User];};:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return [($ROUTER->("USERMAN")->("GETPAYEMNT")) User=$User];};:return ("");};
+:set ($ROUTER->("ADDUSER")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return [($ROUTER->("HOTSPOT")->("ADDUSER")) User=$User  Name=$Name Mac=$Mac Comment=$Comment];};:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return [($ROUTER->("USERMAN")->("ADDUSER")) User=$User Name=$Name Mac=$Mac Comment=$Comment];};:return ("");};
+:set ($ROUTER->("CHANGEPROF")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return [($ROUTER->("HOTSPOT")->("CHANGEPROF")) User=$User Profile=$Profile];};:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return [($ROUTER->("USERMAN")->("CHANGEPROF")) User=$User Profile=$Profile];};:return ("");};
+:set ($ROUTER->("ISNEW")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return ((([($ROUTER->("HOTSPOT")->("GETDATA")) User=$User ]->("uptime"))+00:00:00)<00:00:30);};:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return ((([($ROUTER->("USERMAN")->("GETDATA")) User=$User ]->("uptime-used"))+00:00:00)<00:00:30);};:return (false);};
+:set ($ROUTER->("COLLECT")) do={:global ROUTER;:global OSAMA;:global KHADAMAT;:global COLLECT;:global SPEEDS;:global ALLUSERSID;
+:if (($KHADAMAT->("COLLECT"))="1"&&[:len $U]>0&&[:len $M]>0) do={
+:if ([:len $PR]=0) do={:set $PR ([($ROUTER->("GETPROFILE")) User=$U]->("name"))};
+:if ([:len $COLLECT]<2) do={:global COLLECT;:set $COLLECT [:toarray ""];[/ip firewall address-list find [:if ($list="COLLECT") do={:local c [:pick $comment ([:find $comment (".")]+1) [:len $comment]];:local c2;:local c3;:if ($c~"\\.") do={:set $c2 [:pick $c ([:find $c (".")]+1) [:len $c]];:set $c [:pick $c 0 ([:find $c (".")])];:if ([:typeof ($COLLECT->("$c"))]!="array") do={:set ($COLLECT->("$c")) [:toarray ""];};:if ($c2~"\\.") do={:if ([:typeof ($COLLECT->("$c")->("$c2"))]!="array") do={:set ($COLLECT->("$c")->("$c2")) [:toarray ($COLLECT->("$c")->("$c2"))];};:set $c3 [:pick $c2 ([:find $c2 (".")]+1) [:len $c2]];:set ($COLLECT->("$c")->("$c2")->("$c3")) $address;} else={:set ($COLLECT->("$c")->("$c2")) $address;}} else={:set ($COLLECT->("$c")) $address;};}]];};
+:if ([:typeof ($COLLECT->("$M"))]!="array") do={:set ($COLLECT->("$M")) [:toarray ""];:set ($COLLECT->("$M")->("$PR")) 1;:do {/ip firewall address add list="COLLECT" address=1 comment="COLLECT.$M.$PR" disabled=yes;} on-error={ }} else={
+:local IsNew (false);:do {:set IsNew ([($ROUTER->("ISNEW")) User=$U]);} on-error={ };:if ($IsNew) do={:set ($COLLECT->("$M")->("$PR")) (($COLLECT->("$M")->("$PR"))+1);};
+:do {/ip firewall address-list set ("COLLECT.$M.$PR") address=($COLLECT->("$M")->("$PR")) disabled=yes;} on-error={ };
+};
+:if ([:len ($COLLECT->("$U"))]=0) do={:set ($COLLECT->("$U")) [:toarray ""];:set ($COLLECT->("$U")->("$M")) [($OSAMA->("TIMESTAMP"))];:do {/ip firewall address add list="COLLECT" address=($COLLECT->("$U")->("$M")) comment="COLLECT.$U.$M" disabled=yes;} on-error={ };};
+:local n 10;:if ([:len ($KHADAMAT->("COLLECTN"))]>0) do={:set $n ($KHADAMAT->("COLLECTN"));};:if (($COLLECT->("$M")->("$PR"))>=$n&&!($PR~"free")&&!($PR~"loan")&&!($PR~"sahar")&&!($PR~"fri")) do={:local a [/sys clock get date];:local uuu ([:tostr $U]."0000");:local CC ([:tostr ($COLLECT->("$M")->("$PR"))]);:set ($SPEEDS->("$uuu")) ($SPEEDS->("$U"));:local MM (500*1024*1024);:if ([:len ($KHADAMAT->("COLLECTM"))]>0) do={:set $MM ($KHADAMAT->("COLLECTM"));};:local HH 05:00:00;:if ([:len ($KHADAMAT->("COLLECTH"))]>0) do={:set $HH ($KHADAMAT->("COLLECTH"));};:local idd;:do {:if (!($PR~"free")&&[:len $PR]>0) do={:set $idd [($ROUTER->("ADDUSER")) User=$U Name=$uuu Mac=$M Comment=([/system clock get date ]." ".[/system clock get time]."-\DF\D1\CA-\E3\CC\C7\E4\ED  ")]}} on-error={};:if ([:len $idd]=0) do={:do {/ip hotspot user add name=$uuu comment=([/system clock get date ]." ".[/system clock get time]."-\DF\D1\CA-\E3\CC\C7\E4\ED  ") mac-address=$M profile=COLLECT limit-bytes-total=$MM limit-uptime=$HH;} on-error={ };};:set ($COLLECT->("$M")->("$PR"));:if ([:typeof ($COLLECT->("PRIZE"))]!="array") do={:set ($COLLECT->("PRIZE")) [:toarray ""];};:set ($COLLECT->("PRIZE")->("$M")) [:toarray ""];:set ($COLLECT->("PRIZE")->("$M")->("STA")) ({"text"=(" \C7\E1\DD \E3\C8\D1\E6\E6\DF \E1\DE\CF \CD\D5\E1\CA \DA\E1\EC \DF\D1\CA \E3\CC\C7\E4\ED \E3\E4 \CE\CF\E3\C9 \C7\CC\E3\DA \E6\C7\D1\C8\CD   \D1\DE\E3 \C7\E1\DF\D1\CA (  $uuu  )");"title"=("\C7\CC\E3\DA \E6\C7\D1\C8\CD");"icon"="SUCCESS"});:set ($COLLECT->("PRIZE")->("$M")->("STN")) (" "," \C7\CC\E3\DA \E6\C7\D1\C8\CD ");:set ($COLLECT->("PRIZE")->("$M")->("STV")) (" ","\D1\DE\E3 \C7\E1\DF\D1\CA=$uuu");:do {/ip firewall address-list remove ("COLLECT.$M.$PR")} on-error={};:return ($SP,($COLLECT->("PRIZE")->("$M")));};
+};:return $SP;};
+:set ($ROUTER->("LOAN")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:global KHADAMAT;:global COLLECT;
+:local IsNew (false);
+:local userLoan (false);
+# :local col 0;
+# :foreach n,v in=($COLLECT->("$M")) do={:set $col ($col+[:tonum $v]);};
+:do {:set IsNew ([($ROUTER->("ISNEW")) User=$U]);} on-error={ };
+:do {:set userLoan ([:len [/ip hotspot user get ("T-$M")]]>1);} on-error={ };
+:if ($IsNew&&$userLoan) do={
+:if ([:len ($ALLUSERSID->("H")->("$U"))]>0) do={:return [($ROUTER->("HOTSPOT")->("LOAN")) U=$U A=$A M=$M PR=$PR];};
+:if ([:len ($ALLUSERSID->("M")->("$U"))]>0) do={:return [($ROUTER->("USERMAN")->("LOAN")) U=$U A=$A M=$M PR=$PR];};
+# :do {/ip hotspot active remove [find address=$A];:delay 1s;} on-error={ };
+# :do {/ip hotspot user remove ("T-$M");} on-error={ };
+};
+:return ("");
+};
+:set ($ROUTER->("SAHRA")) do={
+:global ROUTER;:global OSAMA;:global ALLUSERSID;:global KHADAMAT;:global COLLECT;
+:local IsNew (false);
+:do {:set IsNew ([($ROUTER->("ISNEW")) User=$U]);} on-error={ };
+:if ($IsNew) do={
+:local t [/sys clock get time];
+:if ($t<(($Ten,06:00:00)->0)&&$t>(($Tst,01:00:00)->0)&&((([($OSAMA->("TIMESTAMP"))]/(24*60*60))%7)!=1)) do={
+:if ([:len ($ALLUSERSID->("H")->("$U"))]>0) do={:return [($ROUTER->("HOTSPOT")->("SAHRA")) U=$U A=$A M=$M PR=$PR];};
+:if ([:len ($ALLUSERSID->("H")->("$U"))]>0) do={:return [($ROUTER->("USERMAN")->("SAHRA")) U=$U A=$A M=$M PR=$PR];};
+};};:return ("");};
+:set ($ROUTER->("FRIDAY")) do={
+:global ROUTER;:global OSAMA;:global ALLUSERSID;:global KHADAMAT;:global COLLECT;
+:local IsNew (false);
+:do {:set IsNew ([($ROUTER->("ISNEW")) User=$U]);} on-error={ };
+:if ($IsNew) do={
+:if ((([($OSAMA->("TIMESTAMP"))]/(24*60*60))%7)=1) do={
+:if ([:len ($ALLUSERSID->("H")->("$U"))]>0) do={:return [($ROUTER->("HOTSPOT")->("FRIDAY")) U=$U A=$A M=$M PR=$PR];};
+:if ([:len ($ALLUSERSID->("H")->("$U"))]>0) do={:return [($ROUTER->("USERMAN")->("FRIDAY")) U=$U A=$A M=$M PR=$PR];};
+};};:return ("");};
+:set ($ROUTER->("HOTSPOT")) [:toarray ""];
+:set ($ROUTER->("HOTSPOT")->("GETIDS")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:typeof $ALLUSERSID]!="array") do={:set $ALLUSERSID [:toarray ""];};:set ($ALLUSERSID->("H")) [:toarray ""];:local A [:toarray ""];/ip hotspot user find [:set ($A->("$name")) $".id";];:set ($ALLUSERSID->("H")) $A;:return $A;}
+:set ($ROUTER->("HOTSPOT")->("GETID")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return ($ALLUSERSID->("H")->("$User"))};:local A [:toarray ""];/ip hotspot user find [:set ($A->("$name")) $".id";];:set ($ALLUSERSID->("H")) $A;:return ($A->("$User"));}
+:set ($ROUTER->("HOTSPOT")->("GETPAYEMNTS")) do={:global ROUTER;:global OSAMA;:local Id;:return ("");};
+:set ($ROUTER->("HOTSPOT")->("GETPAYEMNT")) do={:global ROUTER;:global OSAMA;:local Id;:return ("");};
+:set ($ROUTER->("HOTSPOT")->("GETDATA")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:return [/ip hotspot user get ($ALLUSERSID->("H")->("$User"))]};:local A [:toarray ""];/ip hotspot user find [:set ($A->("$name")) $".id";];:set ($ALLUSERSID->("H")) $A;:return [/ip hotspot user get ($A->("$User"))];}
+:set ($ROUTER->("HOTSPOT")->("GETLIMIT")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:local L [($ROUTER->("HOTSPOT")->("GETDATA")) User=$User];:return ({"transfer-limit"=($L->("limit-bytes-total"));"uptime-limit"=($L->("limit-uptime"))})};:return [:toarray ""];};
+:set ($ROUTER->("HOTSPOT")->("GETMEGA")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:local L [($ROUTER->("HOTSPOT")->("GETDATA")) User=$User];:if ([:len ($L->("limit-bytes-total"))]>0) do={:return ($L->("limit-bytes-total"))}};:return ([]);};
+:set ($ROUTER->("HOTSPOT")->("GETPROFILE")) do={:global ROUTER;:global OSAMA;:local Id;:if ([:len $User]>0) do={:set $Id [/ip hotspot user profile find name=([($ROUTER->("HOTSPOT")->("GETDATA")) User=$User]->("profile"))]} else={:set $Id [/ip hotspot user profile find name=$Name];};:if ([:len $Id]>0) do={:return [/ip hotspot user profile get $Id];};:return [:toarray ""];};
+:set ($ROUTER->("HOTSPOT")->("GETUSERDAYS")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local v [:toarray ""];:if ([:len ($ALLUSERSID->("H")->("$User"))]>0) do={:set $v [/ip hotspot user get ($ALLUSERSID->("H")->("$User"))];:local f1 ([:find ($v->"email") ("@")]+0);:local f2 ([:find ($v->"email") ("!")]+0);:local d 0;:if ($f1>$f2) do={:set $f1 $f2;};:if ($f1>0) do={:set $d ([:tonum [:pick ($v->"email") 0 $f1]]+0);};:if ("$OPTION"="SET"&&[:len ($v->("comment"))]=0) do={:local Date [/system clock get date];:local Time [/system clock get time];:if ($d>0) do={:local TT [($OSAMA->("ADD/DATE")) Date=$Date Time=$Time N=($d*24*60*60)];:set ($v->("comment")) ($Date." ".$Time."-".$TT);};/ip hotspot user comment ($ALLUSERSID->("H")->("$User")) comment=($v->("comment"))};:if (!(($v->("comment"))~("^[a-z]{3}[/][0-9]{2}[/][0-9]{4}"))) do={:set $Date ([($OSAMA->("REGEXP")) S=($v->("comment")) R=("[a-z]{3}[/][0-9]{2}[/][0-9]{4}")]->0->0);:set $Time ([($OSAMA->("REGEXP")) S=($v->("comment")) R=("[0-9][0-9][:][0-9][0-9][:][0-9][0-9][:]")]->0->0);} else={:set $Date [:pick ($v->("comment")) 0 11];:set $Time [:pick ($v->("comment")) 12 20];};:if ($d>0) do={:return ("$Date-".[($OSAMA->("ADD/DATE")) Date=$Date Time=$Time N=(([:tonum $d]+0)*24*60*60)]);};};:if (($v->("comment"))~("^[a-z]{3}[/][0-9]{2}[/][0-9]{4}")) do={:return ($v->("comment"))};:return ("");};
+:set ($ROUTER->("HOTSPOT")->("ADDUSER")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;:do {:set ($ALLUSERSID->("H")->("$Name")) [/ip hotspot user add copy-from=($ALLUSERSID->("H")->("$User")) name="$Name" mac-address=(($Mac,"00:00:00:00:00:00")->0) comment=$Comment];} on-error={ };:return ($ALLUSERSID->("H")->("$User"));};
+:set ($ROUTER->("HOTSPOT")->("CHANGEPROF")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;:do {[:ip hotspot user set ($ALLUSERSID->("H")->("$User")) profile=$Profile  ];} on-error={:return ([]);};:return ($ALLUSERSID->("H")->("$User"));};
+:set ($ROUTER->("HOTSPOT")->("LOAN")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;
+:local oldprofile [($ROUTER->("GETPROFILE")) User=$U];
+:if ([:len ($oldprofile->("name"))]>1) do={
+:local newprofile [($ROUTER->("HOTSPOT")->("GETPROFILE")) Name=(($oldprofile->("name"))."loan")];
+:if ([:len ($newprofile->("name"))]>1) do={
+:do {[($ROUTER->("HOTSPOT")->("CHANGEPROF")) User=$U Profile=($newprofile->("name"))];} on-error={ };
+:do {/ip hotspot user remove ("T-$M");} on-error={ };
+:do {/ip hotspot active remove [find address=$A];} on-error={ };:delay 1s;
+:do {/ip hotspot active login ip=$A mac-address=$M user=$U password=([($ROUTER->("HOTSPOT")->("GETDATA")) User=$U]->("password"));} on-error={ };
+};};:return ("");}
+:set ($ROUTER->("HOTSPOT")->("SAHRA")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;
+:local oldprofile [($ROUTER->("HOTSPOT")->("GETPROFILE")) User=$U];
+:if ([:len ($oldprofile->("name"))]>1) do={
+:local newprofile [($ROUTER->("HOTSPOT")->("GETPROFILE")) Name=(($oldprofile->("name"))."sahar")];
+:if ([:len ($newprofile->("name"))]>1) do={
+:do {[($ROUTER->("HOTSPOT")->("CHANGEPROF")) User=$U Profile=($newprofile->("name"))];} on-error={ };
+:do {/ip hotspot active remove [find address=$A];} on-error={ };:delay 1s;
+:do {/ip hotspot active login ip=$A mac-address=$M user=$U password=([($ROUTER->("HOTSPOT")->("GETDATA")) User=$U]->("password"));} on-error={ };
+};};:return ("");}
+:set ($ROUTER->("HOTSPOT")->("FRIDAY")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;
+:local oldprofile [($ROUTER->("HOTSPOT")->("GETPROFILE")) User=$U];
+:if ([:len ($oldprofile->("name"))]>1) do={
+:local newprofile [($ROUTER->("HOTSPOT")->("GETPROFILE")) Name=(($oldprofile->("name"))."fri")];
+:if ([:len ($newprofile->("name"))]>1) do={
+:do {[($ROUTER->("HOTSPOT")->("CHANGEPROF")) User=$U Profile=($newprofile->("name"))];} on-error={ };
+:do {/ip hotspot active remove [find address=$A];} on-error={ };:delay 1s;
+:do {/ip hotspot active login ip=$A mac-address=$M user=$U password=([($ROUTER->("HOTSPOT")->("GETDATA")) User=$U]->("password"));} on-error={ };
+};};:return ("");}
+:set ($ROUTER->("HOTSPOT")->("LOAN")) do={:global ROUTER;};
+:set ($ROUTER->("HOTSPOT")->("SAHRA")) do={:global ROUTER;};
+:set ($ROUTER->("HOTSPOT")->("FRIDAY")) do={:global ROUTER;};
+:set ($ROUTER->("USERMAN")) [:toarray ""];
+:local Date [/sys cl get date];
+:local Time [:tostr [/sys cl get time]];
+:do {:set ($OSAMA->("GMT-OFFSET")) [/sys cl get gmt-offset];} on-error={ };
+:set ($OSAMA->("LASTRUN")) [($OSAMA->("TIMESTAMP"))];
+:set ($OSAMA->("A")) do={:return [:toarray ""];};
+:do {/que sim add max-limit=500M/500M name=FIRST target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6;} on-error={ };
+:do {/que sim add max-limit=500M/500M name=FAST  target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6 place-before=FIRST;} on-error={ };
+:do {/que sim move ("FIRST") [get ([find]->0) name];} on-error={ };
+:do {/que sim move ("FAST") ("FIRST") } on-error={ };
+:delay 1s;
+:do {:global OSAMA;:execute script={:global OSAMA;:delay 20ms;:return ("\24(if http-status == 302)Hotspot redirect\24(endif)\24(if http-header == 'Location')\24(if link-orig != '')http://\24(if hostname == '')\24(server-address)\24(endif)\24(if hostname != '')\24(hostname)\24(endif)/login\?\24(var)&\24(link-orig)&var=err\24(endif)\24(if link-orig == '')http://\24(if hostname == '')\24(server-address)\24(endif)\24(if hostname != '')\24(hostname)\24(endif)/.json/status\24(endif)\24(endif)\24(if http-header == 'Access-Control-Allow-Origin')*\24(endif)\24(if http-header == 'Cross-Origin-Resource-Policy')cross-origin\24(endif)")} file=(($OSAMA->("PATH"))."/.server/request"); } on-error={ };
+:do {:global OSAMA;:execute script={:global OSAMA;:delay 20ms;:return ("\24(if http-status == 302)Hotspot redirect\24(endif)\24(if http-header == 'Location')http://\24(if hostname == '')\24(server-address)\24(else)\24(hostname)\24(endif)/.server/\24(ip).txt\?var=\$(var)\24(endif)\24(if http-header == 'Access-Control-Allow-Origin')*\24(endif)\24(if http-header == 'Cross-Origin-Resource-Policy')cross-origin\24(endif)")} file=(($OSAMA->("PATH"))."/.server/response"); } on-error={ };
+:do {:global OSAMA;:execute script={:global OSAMA;:delay 20ms;:return ("\24(if http-status == 302)alogin Redirect\24(endif)\24(if http-header == 'Location')http://notifications.hotspot.open:8080/notifications/\24(var)\?mac=\24(mac)&ip=\24(ip)&active=\24(logged-in)&uptime=\24(uptime)\24(endif)\24(if http-header == 'Access-Control-Allow-Origin')*\24(endif)\24(if http-header == 'Cross-Origin-Resource-Policy')cross-origin\24(endif)")} file=(($OSAMA->("PATH"))."/.server/notification"); } on-error={ };
+:do {:global OSAMA;:execute script={:global OSAMA;:delay 20ms;:put ($OSAMA->("HEADER/JS"));:return ("osamaNotificationsText(`\$(var)`)") } file=(($OSAMA->("PATH"))."/.server/text"); } on-error={ };
+:do {:global OSAMA;:execute script={:global OSAMA;:delay 20ms;:put ($OSAMA->("HEADER/JS"));:return ("osamaNotificationsImage(`\$(var)`)") } file=(($OSAMA->("PATH"))."/.server/image"); } on-error={ };
+:do {:global OSAMA;:execute script={:global OSAMA;:delay 20ms;:put ($OSAMA->("HEADER/JS"));:return ("osamaNotificationsVideo(`\$(var)`)") } file=(($OSAMA->("PATH"))."/.server/video"); } on-error={ };
+:do {:global OSAMA;:execute script={:global OSAMA;:delay 20ms;:put ($OSAMA->("HEADER/JS"));:return ("osamaNotificationsNew(`\$(var)`)") } file=(($OSAMA->("PATH"))."/.server/notifications"); } on-error={ };
+:do {:global OSAMA;:execute script={:global OSAMA;:delay 20ms;:put ($OSAMA->("HEADER/JS"));:return ("osamaNotificationsChat(`\$(var)`)") } file=(($OSAMA->("PATH"))."/.server/chat"); } on-error={ };
+:do {:global OSAMA;:execute script={:global OSAMA;:delay 20ms;:put ($OSAMA->("HEADER/JS"));:return ("osamaSliderNew(`\$(var)`)") } file=(($OSAMA->("PATH"))."/.server/slider"); } on-error={ };
+:global ALLUSERSID;:if ([:typeof $ALLUSERSID]!="array") do={:set $ALLUSERSID [:toarray ""];};
+:global COLLECT;:if ([:typeof $COLLECT]!="array") do={:set $COLLECT [:toarray ""];};
+:global LSTSPEED;:if ([:typeof $LSTSPEED]!="array") do={:set $LSTSPEED [:toarray ""];};
+:do {:global OSAMACHECKQUE;[$OSAMACHECKQUE];} on-error={ };
+:global ALLPAYMENTS;:if ([:typeof $ALLPAYMENTS]!="array") do={:set $ALLPAYMENTS [:toarray ""];};
+:do {
+:if (!(($THISROUTER->"version")~"^7")) do={
+:set ($ROUTER->("USERMAN")->("GETIDS")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:typeof $ALLUSERSID]!="array") do={:set $ALLUSERSID [:toarray ""];};:set ($ALLUSERSID->("M")) [:toarray ""];:local A [:toarray ""];:tool user-manager user find [:set ($A->("$username")) $".id";];:set ($ALLUSERSID->("M")) $A;:return $A;};
+:set ($ROUTER->("USERMAN")->("GETID")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return ($ALLUSERSID->("M")->("$User"))};:local A [:toarray ""];:tool user-manager user find [:set ($A->("$username")) $".id";];:set ($ALLUSERSID->("M")) $A;:return ($A->("$User"));};
+:set ($ROUTER->("USERMAN")->("GETPAYEMNTS")) do={:global ROUTER;:global OSAMA;:global ALLPAYMENTS;:if ([:typeof $ALLPAYMENTS]!="array") do={:set $ALLPAYMENTS [:toarray ""];};:set ($ALLPAYMENTS->("M")) [:toarray ""];:local A [:toarray ""];[:tool user-manager payment find [:set ($A->("$username")) $".id";]];:set ($ALLPAYMENTS->("M")) $A;:return $A;};
+:set ($ROUTER->("USERMAN")->("GETPAYEMNT")) do={:global ROUTER;:global OSAMA;:global ALLPAYMENTS;:local A [:toarray ""];:if ([:len ($ALLPAYMENTS->("M")->("$User"))]>0) do={:do {:set $A [:tool user-manager payment get ($ALLPAYMENTS->("M")->("$User"))]} on-error={};};:return $A;};
+:set ($ROUTER->("USERMAN")->("GETDATA")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return [:tool user-manager user get ($ALLUSERSID->("M")->("$User"))]};:return [:toarray ""];}
+:set ($ROUTER->("USERMAN")->("GETLIMIT")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:local P [($ROUTER->("USERMAN")->("GETPROFILE")) User=$User];:local L [:tool user-manager profile limitation get [:tool user-manager profile limitation find name=[:tool user-manager profile profile-limitation get ([:tool user-manager profile profile-limitation find profile=($P->("name"))]->0) limitation]]];:return $L};:return [:toarray ""];};
+:set ($ROUTER->("USERMAN")->("GETMEGA")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:local L [($ROUTER->("USERMAN")->("GETLIMIT")) User=$User];:if ([:len ($L->("transfer-limit"))]>0) do={:return ($L->("transfer-limit"))}};:return ([]);};
+:set ($ROUTER->("USERMAN")->("GETPROFILE")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;:if ([:len $User]>0) do={:set $Id [:tool user-manager profile find name=([($ROUTER->("USERMAN")->("GETDATA")) User=$User]->("actual-profile"))];:if ([:len $Id]>0) do={:return [:tool user-manager profile get $Id];};} else={:set $Id [:tool user-manager profile find name=$Name];:if ([:len $Id]>0) do={:return [:tool user-manager profile get $Id];};};:return [:toarray ""];};
+:set ($ROUTER->("USERMAN")->("GETUSERDAYS")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local A [($ROUTER->("GETDATA")) User=$User];:if ([:len $A]>0) do={:if ([:len ($A->("comment"))]>5) do={:return ($A->("comment"));};:local d [/system clock get date];:local t [/system clock get time];:local Pr [($ROUTER->("GETPROFILE")) User=$User Name=$Name];:local Co ("$d-".[($OSAMA->("ADD/DATE")) Date=$d Time=$t N=[($OSAMA->("TIME2NUM")) Date=$d Time=[:totime [:tostr ($Pr->("validity"))]]]]);:if ("$OPTION"="SET") do={[:tool user-manager user comment ($A->(".id")) comment=$Co];};:return $Co;};:return ("");};
+:set ($ROUTER->("USERMAN")->("ADDUSER")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;:do {:set ($ALLUSERSID->("M")->("$Name")) [:tool user-manager user add copy-from=($ALLUSERSID->("M")->("$User")) username="$Name" caller-id=$Mac comment=$Comment];} on-error={ };:return ($ALLUSERSID->("M")->("$User"));};
+:set ($ROUTER->("USERMAN")->("CHANGEPROF")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;:do {:local CUS [:tool user-manager customer get 0 login];[:tool user-manager user clear-profiles ($ALLUSERSID->("M")->("$User"))  ];[:tool user-manager user create-and-activate-profile ($ALLUSERSID->("M")->("$User")) profile=$Profile  customer=$CUS ];} on-error={:return ([]);};:return ($ALLUSERSID->("M")->("$User"));};
+:set ($ROUTER->("USERMAN")->("LOAN")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;
+:local oldprofile [($ROUTER->("USERMAN")->("GETPROFILE"))  User=$U];
+:if ([:len ($oldprofile->("name"))]>1) do={
+:local newprofile;
+:if ([:len ($ALLUSERSID->("M")->("$U"))]>0) do={:set $newprofile [($ROUTER->("USERMAN")->("GETPROFILE"))  Name=(($oldprofile->("name"))."loan")];} else={:set $newprofile [($ROUTER->("HOTSPOT")->("GETPROFILE"))  Name=(($oldprofile->("name"))."loan")];};
+:if ([:len ($newprofile->("name"))]>1) do={
+:do {/ip hotspot active remove [find address=$A];} on-error={ };
+:delay 10ms;
+:do {[($ROUTER->("USERMAN")->("CHANGEPROF")) User=$U Profile=($newprofile->("name"))];} on-error={ };
+:do {/ip hotspot user remove ("T-$M");} on-error={ };
+:delay 100ms;
+:do {/ip hotspot active login ip=$A mac-address=$M user=$U password=([($ROUTER->("USERMAN")->("GETDATA")) User=$U]->("password"));} on-error={ };
+};};:return ("");}
+:set ($ROUTER->("USERMAN")->("SAHRA")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;
+:local oldprofile [($ROUTER->("USERMAN")->("GETPROFILE"))  User=$U];
+:if ([:len ($oldprofile->("name"))]>1) do={
+:local newprofile;
+:if ([:len ($ALLUSERSID->("M")->("$U"))]>0) do={:set $newprofile [($ROUTER->("USERMAN")->("GETPROFILE"))  Name=(($oldprofile->("name"))."sahar")];} else={:set $newprofile [($ROUTER->("HOTSPOT")->("GETPROFILE"))  Name=(($oldprofile->("name"))."sahar")];};
+:if ([:len ($newprofile->("name"))]>1) do={
+:do {[($ROUTER->("USERMAN")->("CHANGEPROF")) User=$U Profile=($newprofile->("name"))];} on-error={ };
+:do {/ip hotspot active remove [find address=$A];} on-error={ };:delay 1s;
+:do {/ip hotspot active login ip=$A mac-address=$M user=$U password=([($ROUTER->("USERMAN")->("GETDATA")) User=$U]->("password"));} on-error={ };
+};};:return ("");}
+:set ($ROUTER->("USERMAN")->("FRIDAY")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:local Id;
+:local oldprofile [($ROUTER->("USERMAN")->("GETPROFILE"))  User=$U];
+:if ([:len ($oldprofile->("name"))]>1) do={
+:local newprofile;
+:if ([:len ($ALLUSERSID->("M")->("$U"))]>0) do={:set $newprofile [($ROUTER->("USERMAN")->("GETPROFILE"))  Name=(($oldprofile->("name"))."fri")];} else={:set $newprofile [($ROUTER->("HOTSPOT")->("GETPROFILE"))  Name=(($oldprofile->("name"))."fri")];};
+:if ([:len ($newprofile->("name"))]>1) do={
+:do {[($ROUTER->("USERMAN")->("CHANGEPROF")) User=$U Profile=($newprofile->("name"))];} on-error={ };
+:do {/ip hotspot active remove [find address=$A];} on-error={ };:delay 1s;
+:do {/ip hotspot active login ip=$A mac-address=$M user=$U password=([($ROUTER->("USERMAN")->("GETDATA")) User=$U]->("password"));} on-error={ };
+};};:return ("");}
+} else={
+:set ($ROUTER->("USERMAN")->("GETIDS")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:typeof $ALLUSERSID]!="array") do={:set $ALLUSERSID [:toarray ""];};:set ($ALLUSERSID->("M")) [:toarray ""];:local A [:toarray ""];:user-manager user find [:set ($A->("$name")) $".id";];:set ($ALLUSERSID->("M")) $A;:return $A;}
+:set ($ROUTER->("USERMAN")->("GETID")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return ($ALLUSERSID->("M")->("$User"))};:local A [:toarray ""];:user-manager user find [:set ($A->("$name")) $".id";];:set ($ALLUSERSID->("M")) $A;:return ($A->("$User"));}
+:set ($ROUTER->("USERMAN")->("GETPAYEMNTS")) do={:global ROUTER;:global OSAMA;:global ALLPAYMENTS;:if ([:typeof $ALLPAYMENTS]!="array") do={:set $ALLPAYMENTS [:toarray ""];};:set ($ALLPAYMENTS->("M")) [:toarray ""];:local A [:toarray ""];[:user-manager payment find [:set ($A->("$name")) $".id";]];:set ($ALLPAYMENTS->("M")) $A;:return $A;};
+:set ($ROUTER->("USERMAN")->("GETPAYEMNT")) do={:global ROUTER;:global OSAMA;:global ALLPAYMENTS;:local A [:toarray ""];:if ([:len ($ALLPAYMENTS->("M")->("$User"))]>0) do={:do {:set $A [:user-manager payment get ($ALLPAYMENTS->("M")->("$User"))]} on-error={};};:return $A;};
+:set ($ROUTER->("USERMAN")->("GETDATA")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:return [:user-manager user get ($ALLUSERSID->("M")->("$User"))]};:return [:toarray ""];}
+:set ($ROUTER->("USERMAN")->("GETLIMIT")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:local P [($ROUTER->("USERMAN")->("GETPROFILE")) User=$User];:local L [:user-manager profile limitation get [:user-manager profile limitation find name=[:user-manager profile profile-limitation get ([:user-manager profile profile-limitation  find profile=($P->("name"))]->0) limitation]]];:return $L};:return [:toarray ""];};
+:set ($ROUTER->("USERMAN")->("GETMEGA")) do={:global ROUTER;:global OSAMA;:global ALLUSERSID;:if ([:len ($ALLUSERSID->("M")->("$User"))]>0) do={:local L [($ROUTER->("USERMAN")->("GETLIMIT")) User=$User];:if ([:len ($L->("transfer-limit"))]>0) do={:return ($L->("transfer-limit"))}};:return ([]);};
+:set ($ROUTER->("USERMAN")->("GETPROFILE")) do={:global ROUTER;:global OSAMA;:local Id;:if ([:len $User]>0) do={:set $Id [:user-manager profile find name=([($ROUTER->("USERMAN")->("GETDATA")) User=$User]->("group"))]} else={:set $Id [:user-manager profile find name=$Name];};:if ([:len $Id]>0) do={:return [:user-manager profile get $Id];};:return [:toarray ""];};
+:set ($ROUTER->("USERMAN")->("GETUSERDAYS")) do={:global ROUTER;:global OSAMA;:local A [($ROUTER->("GETDATA")) User=$User];:if ([:len $A]>0) do={:if ([:len ($A->("comment"))]>5) do={:return ($A->("comment"));};:local d [/system clock get date];:local t [/system clock get time];:local Pr [($ROUTER->("GETPROFILE")) User=$User Name=$Name];:local Co ("$d-".[($OSAMA->("ADD/DATE")) Date=$d Time=$t N=[($OSAMA->("TIME2NUM")) Date=$d  Time=[:totime [:tostr ($Pr->("validity"))]]]]);:if ("$OPTION"="SET") do={[:user-manager user comment ($A->(".id")) comment=$Co];};:return $Co;};:return ("");};
+};
+} on-error={ };
+:do {/que sim add max-limit=500M/500M name=FIRST target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6;} on-error={ };
+:do {/que sim add max-limit=500M/500M name=FAST  target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6 place-before=FIRST;} on-error={ };
+:do {/que sim set ("FAST") max-limit=500M/500M   target="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12" dst="10.0.0.0/8" priority=6/6 disabled=no;} on-error={ };
+:do {/que sim move ("FIRST") [get ([find]->0) name];} on-error={ };
+:do {/que sim move ("FAST") ("FIRST") } on-error={ };
+:do {/que sim find [:if (name~"^(hs-)[<]" && dynamic=yes) do={:do {remove $".id";} on-error={}}];} on-error={ };
+[/file  remove [find name=(($OSAMA->("DISK"))."hotspotbyosama/error.txt")]]; 
+[($ROUTER->("HOTSPOT")->("GETIDS"))];
+[($ROUTER->("USERMAN")->("GETIDS"))];
+:global OSAMA;:local dx0 [($OSAMA->("NUM2MONTH")) N=([($OSAMA->("TIMESTAMP"))])];:local dx1 [($OSAMA->("NUM2MONTH")) N=([($OSAMA->("TIMESTAMP"))]-(37*60*60*24))];:local dx2 [($OSAMA->("NUM2MONTH")) N=([($OSAMA->("TIMESTAMP"))]-(2*37*60*60*24))];:global COLLECT;:set $COLLECT [:toarray ""];:global FIRESTSEEN;:set $FIRESTSEEN [:toarray ""];:global LSTSPEED;:set $LSTSPEED [:toarray ""];:local A;:set $A [:toarray ""];:set  ($A->("COLLECT")) $COLLECT;:set ($A->("LSTSPEED")) $LSTSPEED ;:set ($A->("FIRESTSEEN")) $FIRESTSEEN;;[/ip firewall address-list find [:do {:if ($comment~"\\.") do={:local aa ($"creation-time");:if ($aa~"($dx1||$dx2)[-/]"&&!($aa~("$dx0"))&&[:len ("$aa$dx1$dx2$dx1")]>18) do={:do {remove $".id";} on-error={}} else={:local c [:pick $comment ([:find $comment (".")]+1) [:len $comment]];:local c2;:local c3;:if ($c~"\\.") do={:set $c2 [:pick $c ([:find $c (".")]+1) [:len $c]];:set $c [:pick $c 0 ([:find $c (".")])];:if ([:typeof ($A->("$list")->("$c"))]!="array") do={:if ([:typeof ($A->("$list"))]!="array") do={:set ($A->("$list")) [:toarray ""];};:set ($A->("$list")->("$c")) [:toarray ""];};:if ($c2~"\\.") do={:if ([:typeof ($A->("$list")->("$c")->("$c2"))]!="array") do={:set ($A->("$list")->("$c")->("$c2")) [:toarray ($A->("$list")->("$c")->("$c2"))];};:set $c3 [:pick $c2 ([:find $c2 (".")]+1) [:len $c2]];:set ($A->("$list")->("$c")->("$c2")->("$c3")) $address;} else={:set ($A->("$list")->("$c")->("$c2")) $address;}} else={:set ($A->("$list")->("$c")) $address;};};};} on-error={}]];:set $COLLECT ($A->("COLLECT"));:set $LSTSPEED ($A->("LSTSPEED"));:set $FIRESTSEEN ($A->("FIRESTSEEN"));
+:execute {:global OSAMA;:local d1 (([($OSAMA->("TIMESTAMP"))]-30*24*60*60));:local d2 ([($OSAMA->("TIMESTAMP"))]-7*24*60*60);/ip firewall address-list find  [:if ($comment~("COLLECT")||$comment~("FIRESTSEEN")||$comment~("LSTSPEED")) do={:local d [($OSAMA->("DATE2NUM")) Date=$"creation-time"];:if ($d<$d1||($d<$d2&&$comment~("LSTSPEED"))) do={:do {remove $".id";} on-error={}}}];}
+:local TS ([($OSAMA->("TIMESTAMP"))]-((($FIRESTSEEN->("MAXDAYS"))+33)*60*60*24));[/ip firewall address find [:if ($list="FIRESTSEEN") do={:if ($address>$TS) do={:local c [:pick $comment ([:find $comment (".")]+1) [:len $comment]];:set ($FIRESTSEEN->("$c")) ([:pick $"creation-time" 0 11].("\C7\E1\EC").[:pick [($OSAMA->("NUM2DATE")) Date=$"creation-time" N=$address] 0 11]);} else={:do {remove $".id"} on-error={}}}]];
+:local AQN;:local DY [:toarray ""];/que sim find [:if (dynamic=yes) do={:if (name~"^(hs-)[<]") do={:do {remove $".id";} on-error={ } } else={:if (name~"^[<](hotspot-)") do={:set ($DY->([:tostr $target])) $".id";}}} else={:local T [:tostr $target];:if ([:len ($DY->("$T"))]>0) do={:do {remove ($DY->("$T"))} on-error={ };};:if (name="FAST"&&[:len ($AQN->0)]>0) do={:do {move $name ($AQN->0);} on-error={ };:set ($DY->("$T")) $".id";:set $AQN ($AQN,$name);};};];
+:execute {:delay 10s;:local AQN;:local DY [:toarray ""];/que sim find [:if (dynamic=yes) do={:if (name~"^(hs-)[<]") do={:do {remove $".id";} on-error={ } } else={:if (name~"^[<](hotspot-)") do={:set ($DY->([:tostr $target])) $".id";:set ($DY->("$name")) $".id";}}} else={:local T [:tostr $target];:if ([:len ($DY->("$T"))]>0) do={:do {remove ($DY->("$T"))} on-error={ };};:set $AQN ($AQN,$name);}];};

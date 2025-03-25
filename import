@@ -1,0 +1,35 @@
+/system script
+add dont-require-permissions=no name=SERVER source="\r\
+    \n{\r\
+    \n:global SERVER;\r\
+    \n:global SERVERUPTIME;\r\
+    \n:local LOGID;\r\
+    \n:set (\$SERVER->(\"JOBQUITE\")) 0;/log info \"on\";:delay 1s;:set (\$SERVER->(\"JOBQUITE\")) 1;\r\
+    \n/log print follow-only  where [:set \$SERVERUPTIME \$time;:local Fn (\$SERVER->\$buffer);[\$Fn mes=\$message buf=\$buffer top=\$topics ti=\$time id=(\$\
+    \".id\")];];\r\
+    \n};\r\
+    \n";
+/system scheduler
+add name=SERVER1 on-event="{:delay 5s;\r\
+    \n:do {/queue simple move (\"FAST\") [get ([find]->0) name];} on-error={};\r\
+    \n:if ([:len [/system script job find where script=(\"SERVER\")] ]!=1) do={\r\
+    \n:global SERVER;\r\
+    \n:set (\$SERVER->(\"disk\")) do={:quit };:set (\$SERVER->(\"memory\")) do={:quit };\r\
+    \n:set (\$SERVER->(\"JOBQUITE\")) 0;/log info \"off\";:delay 50ms;:set (\$SERVER->(\"JOBQUITE\")) 1;\r\
+    \n/system script job remove [find where script=(\"SERVER\") ];\r\
+    \n:set (\$SERVER->(\"disk\")) do={:return (false);};:set (\$SERVER->(\"memory\")) do={:return (false);};\r\
+    \n/system script run SERVER;\r\
+    \n};\r\
+    \n};" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup
+add interval=1h name=SERVER2 on-event="{\r\
+    \n:do {/queue simple move (\"FAST\") [get ([find]->0) name];} on-error={};\r\
+    \n:if ([:len [/system script job find where script=(\"SERVER\")] ]!=1) do={\r\
+    \n:global SERVER;\r\
+    \n:set (\$SERVER->(\"disk\")) do={:quit };:set (\$SERVER->(\"memory\")) do={:quit };\r\
+    \n:set (\$SERVER->(\"JOBQUITE\")) 0;/log info \"off\";:delay 50ms;:set (\$SERVER->(\"JOBQUITE\")) 1;\r\
+    \n/system script job remove [find where script=(\"SERVER\") ];\r\
+    \n:set (\$SERVER->(\"disk\")) do={:return (false);};:set (\$SERVER->(\"memory\")) do={:return (false);};\r\
+    \n/system script run SERVER;\r\
+    \n};/import (\"script\");};" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-date=2024-05-11 start-time=\
+    00:00:00
+add name=SERVER on-event="/import (\"script\");" policy=ftp,reboot,read,write,policy,test,sniff,sensitive,romon start-time=startup
