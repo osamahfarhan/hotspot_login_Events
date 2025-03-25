@@ -1,0 +1,135 @@
+<!DOCTYPE html><html lang="ar" translate="no">
+<head>
+<meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html" /><meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Pragma" content="no-cache" /><meta http-equiv="Expires" content="-1" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<meta http-equiv="Refresh" content="$(if username != 'BLOCKED')3600$(endif)$(if username == 'BLOCKED')0; url=/block/status$(endif)" />
+<title>{{network.name}}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+<meta name="description" content="hotspot captive portal $(error)" /><meta name="apple-mobile-web-app-title" content="login hotspot captive portal" />
+<meta name="mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="msapplication-TileImage" type="image/svg+xml" content="/favicon.svg?var=144" /><meta name="apple-mobile-web-app-status-bar-style" color content="black-translucent" /><meta name="msapplication-TileColor" color content="{{color}}" /><meta name="theme-color" color content="{{color}}" /><meta name="msapplication-TileColor" color content="{{color}}" /><link rel="mask-icon" href="/favicon.svg" color="{{color}}" />
+<link rel="icon" sizes="192x192" type="image/svg+xml" href="/favicon.svg.txt?var192&dst=192" /><link rel="shortcut icon" sizes="128x128" type="image/svg+xml" href="/favicon.svg.txt?var128&dst=128" /><link rel="apple-touch-icon" sizes="128x128" type="image/svg+xml" href="/favicon.svg.txt?var=128&dst=128" /><link rel="apple-touch-icon-precomposed" sizes="128x128" type="image/svg+xml" href="/favicon.svg.txt?var=128&dst=128" />
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="extra.css">
+<link rel="stylesheet" href="sw.css">
+<link rel="stylesheet" href="osa.css">
+<link rel="stylesheet" href="color.css">
+</head>
+<body translate="no" theme="th0">
+    <nav class="nav-bar"><div class="nav-bacg"><div class="bacg"></div></div><a href="/cam/index.html" class="nav-item" data-title="تصوير الكرت"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" not-number="0" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h4.01V2H2v6h2V4zm0 12H2v6h6.01v-2H4v-4zm16 4h-4v2h6v-6h-2v4zM16 4h4v4h2V2h-6v2z"></path><path d="M5 11h6V5H5zm2-4h2v2H7zM5 19h6v-6H5zm2-4h2v2H7zM19 5h-6v6h6zm-2 4h-2V7h2zm-3.99 4h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2zm0-4h2v2h-2z"></path></svg></a><a class="nav-item" data-title="تحميل التطبيق" id="prompt-download"><span not-number="1"></span><label for="alertop"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" not-number="0" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="m12 16 4-5h-3V4h-2v7H8z"></path><path d="M20 18H4v-7H2v7c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2v-7h-2v7z"></path></svg></label></a><a href="/" class="nav-item" data-title="الرئيسية"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" not-number="0" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M5 22h14a2 2 0 0 0 2-2v-9a1 1 0 0 0-.29-.71l-8-8a1 1 0 0 0-1.41 0l-8 8A1 1 0 0 0 3 11v9a2 2 0 0 0 2 2zm5-2v-5h4v5zm-5-8.59 7-7 7 7V20h-3v-5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v5H5z"></path></svg></a><a href="/chat/index.html" class="nav-item" data-title="التنبيهات"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" not-number="0" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M5 18v3.766l1.515-.909L11.277 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h1zM4 8h12v8h-5.277L7 18.234V16H4V8z"></path><path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path></svg></a></nav>
+    <header data-vue id="sliders" class="cent"><div class="app-slider"><div class="slider-cont color-bg-270deg"><div class="slider"><div class="slides animated" style="transform: translateX(0%);"><figure  class="animated" v-for="(slide , index) in sliders" :key="index" :data-id="index"><video v-if="slide.type=='video'" :src="slide.src"  :href="slide.href"></video><img  v-else :src="slide.src" :href="slide.href" /><figcaption>{{slide.text}}</figcaption></figure></div></div><span class="prevnav" onClick="prevnav()">❯</span><span class="nextnav" onClick="nextnav()">❮</span><div class="dot-cont"><span>*</span><span>*</span><span>*</span></div></div></div></header>
+    <section data-vue id="newsline"  style="width: 100%; margin: 20px;" v-if="newsline.length>0"><section class="sec" v-for="(news , index) in newsline" :key="index" ><div class="rfm-cont newsline"   style="--pause-on-hover: paused; --pause-on-click: paused; --width: 100%; --transform: none;"><div class="rfm-marquee" style="--play: running; --direction: reverse; --duration: 10s; --delay: 0s; --iteration-count: infinite; --min-width: 100%;"><div class="rfm-cont-ch"><div class="rfm-child" v-bind:class="{ 'color-1': index%2==1,'color-2': index%2==0}" style="--transform: none;"><p>{{news.text}}</p></div></div></div><div class="rfm-marquee" style="--play: running; --direction: reverse; --duration: 10s; --delay: 0s; --iteration-count: infinite; --min-width: 100%;"><div class="rfm-child" style="--transform: none;"><p>{{news.text}}</p></div></div></div></section></section>  
+    <section id="theme" class="themes"><label for="alertop"><div class="bot open"><span></span></div><input type="checkbox" checked class="ape" id="alertop"><div class="alert-app shadowbox" style="overflow-y: auto;"><dialog class="alert-div" tabindex="-1"><div for="alertop" class="exit" aria-label="اغلاق">X</div><div class="alert-cont"><h2 class="alert-title">استخدام تطبيق الشبكة؟</h2><div class="alert-body">  يمكنك الحصول على مميزات عند فتح التطبيق مثل تسجيل الدخول التلقائي متابعة استهلاك الرصيد اول باول و الحصول على تنبيهات عند اقتراب انتهاء الرصيد وغيرة من المزايا للتفاصيل اكثر قم بزيارة صفحة الخدمات</div><div class="alert-act"><a class="alert-bot" style="background-color: #e07466;" id="prompt-intent" href="/" onclick="openInAppEvent()" target="_blank"> فتح </a><button class="alert-bot" style="background-color: #7066e0;" id="addToHomeButton" onclick="onClickInstallApp()"> تحميل </button></div></div></dialog></div></label></section>
+    <section data-vue-themes id="themes" class="themes"><label  v-for="(theme , index) in themes" class="theme" v-bind:class="theme.id" :key="index"><input type="radio" name="theme" :value="theme.color" :id="theme.id" @change="themeChanged($event.target.value,$event.target.id)"  /></label></section>
+    <main class="container">
+        <section data-vue-error id="error-container"><label for="errora"><span></span><input type="checkbox"  v-model="errorChecked" :checked="errorChecked"  class="ape" id="errora"><div class="alert-app shadowbox" style="overflow-y: auto;"><dialog class="alert-div" tabindex="-1"><div for="errora" class="exit" aria-label="اغلاق">X</div><div class="alert-cont" id="error"><p class="alert-title" data-alert-title>$(if link-orig == '7')تحذير$(else)حصل خطا$(endif)</p><p class="alert-body" data-alert-text>$(if link-orig == '7') تحذير !! عدد محاولاتك الخاطئة اصبح $(link-orig) سوف يتم حظرك لمدة 5 دقائق $(endif) $(error) {{errorText}}</p></div></dialog></div></label></section>
+        <div class="screen">
+            <div class="screen-content">
+                <div class="login"id="login"style="visibility: visible;display: block;">
+                        <div style="width: 100%; position: absolute; margin: 0;" >
+                            <div class="logo shape" data-logo-defualt-img>
+                            <svg  class="logo-icon svg-icon" viewBox="0 0 512 512"><g><g><g id="XMLID_1_"><g><path d="m504.05 170.21c12.09 15.01 10.33 38.45-4.84 50.98-13.92 11.49-33.27 8.95-44.3-4.76-50.44-62.68-122.65-98.63-198.12-98.63h-1.14c-75.92.36-148.21 36.99-198.35 100.5-10.99 13.93-30.36 16.43-44.22 5.2-15.44-12.51-17.2-35.95-5.34-50.96 60.68-76.83 149.28-124.7 247.58-125.17h1.43c47.59 0 93.56 10.98 136.64 32.62 3.7 1.86 5.19 6.37 3.33 10.07-1.859 3.7-6.359 5.19-10.06 3.33-40.97-20.58-84.68-31.02-129.91-31.02h-1.37c-90.27.43-176.25 43.97-235.87 119.47-7.14 9.03-5.54 23.07 2.99 29.98 7.4 6 17.22 4.54 23.03-2.81 52.98-67.12 129.54-105.83 210.04-106.21h1.22c80.03 0 156.5 37.99 209.81 104.23 5.891 7.32 15.74 8.64 23.03 2.62 8.55-7.06 9.92-21.11 2.74-30.03-22.04-27.38-47.65-50.66-76.12-69.21-3.47-2.26-4.45-6.91-2.19-10.38 2.261-3.47 6.91-4.45 10.381-2.19 29.799 19.41 56.579 43.76 79.609 72.37z"/><path d="m421.96 235.67c13.35 15.2 11.5 39.561-3.82 52.21-13.26 10.95-32.01 9.23-43.649-3.99-31.38-35.63-73.23-55.229-117.92-55.229-.24 0-.48 0-.72 0-44.96.21-86.91 20.22-118.12 56.34-11.51 13.32-30.25 15.23-43.59 4.42l-.02-.02c-15.45-12.521-17.5-36.86-4.31-52.17 42.08-48.85 100.98-78.69 165.71-79 65.149-.291 124.189 29.299 166.439 77.439zm-13.39 40.66c8.85-7.311 9.88-21.93 2.12-30.77-40.96-46.67-95.681-72.33-154.16-72.33-.31 0-.62 0-.93 0-58.84.28-113.68 26.48-154.42 73.78-3.72 4.32-5.54 10.25-5 16.271.52 5.81 3.21 11.08 7.38 14.46 0 0 0 .01.01.01l.01.01c7.02 5.681 16.61 4.61 22.8-2.569 34.09-39.45 80.04-61.3 129.4-61.53h.791c49.06 0 94.91 21.4 129.18 60.32 6.259 7.108 15.859 8.098 22.819 2.348z"/><path d="m337.11 300.21c7.54 6.62 11.87 16.48 11.87 27.04 0 11.11-4.671 21.34-12.811 28.06-12.3 10.16-28.939 9.181-40.4-.729-6.75-5.84-14.319-10.07-22.51-12.55-3.97-1.21-6.21-5.4-5-9.36 1.2-3.96 5.391-6.2 9.351-5 10.21 3.1 19.63 8.34 27.97 15.561 6.18 5.34 14.63 5.81 21.04.52 9.63-7.96 9.82-24.17.59-32.27-20.42-17.921-44.95-27.391-70.92-27.391h-.48c-26.17.12-50.77 9.83-71.17 28.061-9.3 8.31-8.62 24.55.9 32.26 6.41 5.189 14.86 4.729 21.02-.71 9.46-8.34 20.71-14.271 32.54-17.13 4.02-.98 8.08 1.5 9.05 5.52.98 4.03-1.5 8.08-5.52 9.061-9.46 2.29-18.51 7.06-26.15 13.8-11.48 10.13-28.11 11.06-40.38 1.109-16.97-13.739-17.4-40.829-1.46-55.09 22.84-20.42 51.64-31.739 81.09-31.88h.56c29.24-.002 57.95 11.047 80.82 31.118z"/><path d="m256 386.849c21.38 0 38.76 17.45 38.76 38.891 0 21.45-17.38 38.89-38.76 38.89-21.37 0-38.76-17.439-38.76-38.89 0-21.44 17.39-38.891 38.76-38.891zm23.76 38.891c0-13.17-10.66-23.891-23.76-23.891s-23.76 10.721-23.76 23.891c0 13.18 10.66 23.89 23.76 23.89s23.76-10.71 23.76-23.89z"/></g></g></g></g></svg>
+                            </div>
+                            <img data-logo-img style="display: none;visibility: hidden;position: absolute;transform: rotate(0deg);width: 100%; height: 120px; border: 1px solid black; border-radius: 17px; border-top-right-radius: 0px;" src="img/logo.png" alt="">
+                        </div>
+                        <div data-vue id="network">
+                            <div class="network-prefix">{{network.preff}}</div>
+                            <div class="network-name"><span data-fit-text>{{network.name}} {{network.suff}}</span></div>
+                            <div class="date-field" data-show-date-field><span hot-date></span>,الموافق <span hot-hijri-date hot-adjust-days="-1"></span></div>
+                            <section class="section" style="top:140px;margin-top:5px;"><p class="marquee" style="top:130px;margin-top:12px;">{{network.newsline}} </section>    
+                        </div>
+                        <form class="login-form" name="login">
+                            <label for="loginspeeds" style="text-align:start;margin-bottom: 2px;display: block;">اختر سرعتك</label>
+                            <select  id="loginspeeds" data-vue-loginspeed name="speed" style="width: 62%; text-align: center; margin-bottom: 5px; height: 28px; font-size: x-small; font-family: Almarai, sans-serif, Arial; "  v-model="speedSelected">
+                                <option data-sp  :value="index"  v-for="(sp, index) in speeds" :key="index">{{sp}}</option>
+                            </select>
+                            <div class="login-field"><i class="login-icon fas icon-user"></i> 
+                                <input name="username" class="login-input" type="text"  placeholder="ادخل رمز البطاقة هنا" username-field improve-input autocomplete="off">
+                            <select  id="allusers" data-vue-allusers v-model="allusersSelected" v-on:change="allusersChange($event.target.options.selectedIndex)" v-on:click="allusersChange($event.target.options.selectedIndex)">
+                                <option  v-for="(us, index) in allusers" :key="index"  :value="index">{{us.u}}</option>
+                            </select>
+                            </div>
+                            <div class="login-field password-field"><i class="login-icon fas icon-lock"></i> 
+                                <input name="password" type="password" class="login-input" placeholder="ادخل كلمة السر هنا" improve-input>
+                            </div>
+                            <button class="button login-submit"parent-id="status"enable-hot-cookie><span class="button-text">تسجيل الدخول</span> <i class="button-icon fas icon-left-open"></i>
+                            </button>
+                        </form>
+                    <div style="position: absolute;">
+                        <button class="button app-submit sell-point-icon " parent-id="app-store"   data-app-store-login-button> متجر التطبيقات</button>
+                        <button class="button app-submit sell-point-icon app-store" parent-id="streem"   data-app-stream-login-button>البث المباشر</button>
+                        <button class="button app-submit sell-point-icon app-store" parent-id="loan"  data-loan-button>الخدمات الجديدة</button>
+                    </div>
+                        <div class="social-login"><button class="button app-submit price-icon"parent-id="price"data-price-button>الاسعار</button> <button class="button app-submit sell-point-icon"parent-id="sell-point"data-sell-point-button style="margin:-10px -14px 0px 0px">نقاط البيع</button><h5 class="contact back"data-service-number>خدمة العملاء: {{service-number}}</h5></div>
+             </div>
+    <div class="app" id="chose-speed">
+    <div class="status-div"><div class="wrapper"><p class="title">يرجى اختيار سرعة كرتك!! <div style="padding: 22px;"> <p class="contact-text" style="font-size: 12px">* اختيار سرعة عالية قد يعني انتهاء رصيد الكرت بشكل اسرع لذلك ان كنت تهتم بتوفير الرصيد للكرت يجب اختيار سرعة متوسطة   <div class="app-user" id="speedShowSelect" style="text-align: right;margin-top: 25px;"> 
+    <input type="radio"name="spso"  id="show-speed-0" data-spi value="0"  aria-checked="true"> <label data-spsl for="show-speed-0">سرعه 1</label><br> 
+    <input type="radio"name="spso"  id="show-speed-1" data-spi value="1"><label data-spsl for="show-speed-1">سرعه 2 </label><br>
+    <input type="radio"name="spso"  id="show-speed-2" data-spi value="2"><label data-spsl for="show-speed-2">سرعه 3 </label><br> 
+    <input type="radio"name="spso"  id="show-speed-3" data-spi value="3"><label data-spsl for="show-speed-3">سرعه 4 </label><br> 
+    <input type="radio"name="spso"  id="show-speed-4" data-spi value="4"><label data-spsl for="show-speed-4">سرعه 5 </label><br> 
+    <input type="radio"name="spso"  id="show-speed-5" data-spi value="5"><label data-spsl for="show-speed-5">سرعه 6 </label><br> 
+    <input type="radio"name="spso"  id="show-speed-6" data-spi value="6"><label data-spsl for="show-speed-6">سرعه 7 </label><br>
+    <input type="radio"name="spso"  id="show-speed-7" data-spi value="7"><label data-spsl for="show-speed-7">سرعه 8 </label><br>
+    <input type="radio"name="spso"  id="show-speed-8" data-spi value="8"><label data-spsl for="show-speed-8">سرعه 9 </label><br>
+    <input type="radio"name="spso"  id="show-speed-9" data-spi value="9"><label data-spsl for="show-speed-9">سرعه 10 </label><br>
+    <br>
+</div>
+<div class="social-login" style="margin-top: -1px;"><button class="button app-submit back extra-submit"id="speed_chosen"><span class="button-text">اختيار</span></button> </div>
+<h5 class="contact" style="margin-right: -25px;">تصميم :<a href="https://fb.com/osamahfarhan">اسامةالحميدي</a></h5>
+</div></div></div></div>
+<div class="app"id="status"><div class="status-div"><div class="wrapper"><p class="title"id="status-title">تم تسجيل دخولك بنجاح!<table><tr style="display: none;"><td> تغيير السرعة <td id="mySpeed">...<tr style="display: none;"><td>  التحديثات <td id="myUpdates" class="osamaUpdatsOff">...<tr style="display: none;"><td>  الباقة <td id="myProfile">...<tr style="display: none;"><td statusinfo id="status-days-name"> <td  id="status-days-value" class="status-value">...<tr style="display: none;"><td statusinfo id="status-0-name"> <td id="status-0-value">...<tr style="display: none;"></tr><td id="status-1-name"> <td id="status-1-value">...<tr style="display: none;"><td statusinfo id="status-2-name"> <td id="status-2-value">...<tr style="display: none;"><td statusinfo id="status-3-name"> <td id="status-3-value">...<tr style="display: none;" mysth><td statusinfo>...<td>...<tr myip style="display: none;"><td myip_click  >عنوان الشبكة<td id="ip">$(ip)<tr myusername ><td myusername_click>رقم الحساب<td id="username">$(username)<tr remain_bytes_total><td>التحميل المتبقي<td id="remain_bytes_total">$(if limit-bytes-total == '') مفتوح $(else)<script type="text/javascript">document.write(Math.round(($(remain-bytes-total) / (1024*1024))))</script>$(endif)<tr bytes_total><td bytes_total_click>التحميل المستهلك<td bytes_total_click2 id="bytes_total">...<tr bytes_in style="display: none;"><td bytes_in_click>الرفع<td bytes_in_click2 id="bytes_in">...<tr bytes_out style="display: none;"><td bytes_out_click>التنزيل<td bytes_out_click2 id="bytes_out">...<tr session_time_left><td>الوقت المتبقي<td id="session_time_left">$(if session-time-left == '') مفتوح $(else)<script type="text/javascript">document.write((Math.round($(session-time-left-secs) / 3600)) + ' ساعه ' + ( Math.round($(session-time-left-secs) / 60) % 60) + ' دقيقه ')</script>$(endif)<tr><td>الوقت المستهلك<td id="uptime">...</table></div><button type="button"class="button app-submit extra-submit" data-esterahah>الاستراحة</button><button class="button app-submit sell-point-icon app-store" onclick="window.location.href='/lv/login';"  style="display: none;margin-top: 82px;">الخدمات القديمة</button> <button type="button"class="button app-submit extra-submit"data-mobasher  style="margin-top:12px;">البث المباشر</button></div><br/><br /><br /><br />
+        <button class="button app-submit sell-point-icon app-store"onclick="onLoggedInSpeed(jsonData)"  data-change-speed-status-button>تغيير السرعة</button>
+        <button class="button app-submit sell-point-icon app-store"parent-id="app-store"data-app-store-status-button style="margin-top:12px;"><!-- ⚽ البث المباشر⚽--> متجر التطبيقات</button><div class="social-login"><button class="app-logout button app-submit back"logout-submit-rem erase-cookie clear-hot-cookie>تسجيل الخروج</button> <button class="app-logout button app-submit sell-point-icon cut-connection"logout-submit >قطع الاتصال</button><h5 class="contact"data-service-number>للتواصل واتساب: <a href="https://wa.me/967{{service-number-first}}">اضغط هنا</a></h5></div>
+</div>
+<div class="app"id="block"><div class="status-div"><div class="wrapper"><p class="title">انت محظور<div style="padding: 25px"><p class="contact-text">لقد تم حظرك بسبب محاولات تسجيل الدخول الكثيرة الخاطئة<div class="app-user"><span>بقي على فك الحظر: </span><span count-down-span></span></div></div></div></div><div class="social-login"><h5 class="contact back"data-service-number>خدمة العملاء: {{service-number}}</h5></div></div>
+<div class="app"id="price"><div class="price-div"><div class="wrapper"><p class="title">الاسعار<table><thead><tr><th scope="col">الفئة<th scope="col">الوقت<th scope="col">الرصيد<th scope="col">الصلاحية<tbody id="profiles"></table></div></div><div class="social-login"><button class="button app-submit back price-icon" parent-id="login">العودة</button><h5 class="contact back"data-service-number>خدمة العملاء: {{service-number}}</h5></div></div>
+<div class="app"id="sell-point"><div class="sell-point-div"><div class="wrapper"><p class="title">نقاط البيع<table><tbody class="sell-point"id="sell-points"></table></div></div><div class="social-login"><button class="button app-submit back price-icon" parent-id="login">العودة</button><h5 class="contact back"data-service-number>خدمة العملاء: {{service-number}}</h5></div></div>
+<div class="app"id="app-store"><div class="sell-point-div"><div class="wrapper"id="grid"></div></div><div class="social-login"><button class="app-logout button app-submit back">الصفحة السابقة</button><h5 class="contact back"data-service-number>خدمة العملاء: {{service-number}}</h5></div></div>
+<div class="app"id="streem"><div class="status-div"><div class="wrapper"><p class="title" id="Streem-title">اختر القناة <table> <tr><td><button type="button" class="button app-submit extra-submit"data-streem1 data-streemn1-text>{{streemn1-text}}</button> <tr><td><button type="button" class="button app-submit extra-submit"data-streem2 data-streemn2-text>{{streemn2-text}}</button> <tr><td><button type="button" class="button app-submit extra-submit"data-streem3 data-streemn3-text>{{streemn3-text}}</button> <tr><td><button type="button" class="button app-submit extra-submit"data-streem4 data-streemn4-text>{{streemn4-text}}</button> </table> </div> </div><div class="social-login"><button parent-id="login" class="button app-submit back price-icon">العودة</button><h5 class="contact back"data-service-number>خدمة العملاء: {{service-number}}</h5></div> </div>
+<div class="app"id="loan"><div class="sell-point-div"><div class="wrapper"><p class="title">شرح الخدمات<div id="loan-explain"><p class="contact-text">خدمة سلفني هي خدمة تتيح لك اخذ سلفة  وسدادها في وقت اخر<p class="contact-text">خدمة سهر هي خدمة تعطيك رصيد اضافي 20% عند تعبئة كرت جديد في رمضان الساعة 8 صباحا الى 12 ظهرا بقية الاشهر الساعة 1 ليلا الى 6 صباحا <p class="contact-text">عرض الجمعة هي خدمة تعطيك رصيد اضافي 20% عند تعبئة كرت جديد طوال يوم الجمعة<p class="contact-text">اجمع واربح هي خدمة تعطيك كرت مجاني تلقائيا عند اكمال استخدام 10 كروت من فئة محددة خلال مدة اقصاها 7 ايام</div><button type="button"class="button app-submit extra-submit"id="loan-button"><span class="button-text">اضغط للحصول على سلفة</span> <i class="button-icon fas icon-left-open"></i></button></div><div></div></div><div class="social-login"><button class="app-logout button app-submit back">الصفحة السابقة</button><h5 class="contact back"data-service-number>خدمة العملاء: {{service-number}}</h5></div></div>
+</div>
+<div class="screen-background"><span class="shape shape4 color-bg-90deg"></span><span class="shape shape3 color-bg-180deg"></span><span class="shape shape2 color-bg-90deg"></span><span class="shape shape1"></span></div>
+</div></main>
+<footer>
+    <form name="sendin" action="/login" method="post" style="display:none"><input type="hidden" name="username" /><input type="hidden" name="password" value="" /><input type="hidden" name="dst" value="$(link-orig)" /><input type="hidden" name="var" value="chap" /></form>
+</footer>
+<script>var jsonData={},ChapChar={},isChapFine=false,hotspotConfig={};</script>
+</body>
+<script charset="UTF-8" src="polyfill.js"></script>
+<script charset="UTF-8" src="vue.js"></script>
+<script charset="UTF-8" src="osama.js"></script>
+<script src="helper.js"></script>
+<script>
+var isChapFine = ("$(chap-id)" != "");
+try{isChapFine=(binl2hex(coreMD5(str2binl("\261\047\074\276\014\231\246\027\372\334\043\063\210\171\270\320\112"))) === "e9263920f86ced1f6dc37c60ec887e06");}catch(e){isChapFine=false;}
+</script>
+<script>jsonData=decodeResponse(jsonData)</script>
+<script charset="UTF-8" src="init.min.js"></script>
+<script charset="UTF-8" src="main.min.js"></script>
+<script charset="UTF-8" src="js/hotOptions.min.js"></script>
+<script charset="UTF-8" src="sw.js"></script>
+<script charset="UTF-8" src="osama.min.js"></script>
+<script charset="UTF-8" src="js/cm.min.js"></script>
+<script charset="UTF-8" src="js/loan.min.js"></script>
+<script charset="UTF-8" src="js/hotInImprover.min.js"></script>
+<script charset="UTF-8" src="js/hotCookie.min.js"></script>
+<script charset="UTF-8" src="js/hotBlocker.min.js"></script>
+<script>
+setTimeout(function(){
+    hideLoginPage()
+    showStatusPage()
+    onLoggedIn(jsonData)
+    // var a=document.body.querySelector('[data-network-name]');a.style.fontSize='34px';
+},100);
+</script>
+<script charset="UTF-8" src="js/notifications.js"></script>
+<script charset="UTF-8" src="js/status.js"></script>
+<script charset="UTF-8" src="js/speed.js"></script>
+<!-- $(if http-header == "X-Eng-Osamah-Error")$(if error == '')none$(endif)$(if error != '')Error=$(error-orig-esc)$(endif)$(endif) -->
+<!-- $(if http-header == 'Access-Control-Allow-Origin')*$(endif)$(if http-header == 'Cross-Origin-Resource-Policy')cross-origin$(endif) -->
+</html>
+
+

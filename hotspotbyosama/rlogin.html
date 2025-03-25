@@ -1,0 +1,14 @@
+$(if http-status == 302)Hotspot login required$(endif)
+$(if http-header == "Location")http://$(hostname)/login$(endif)
+<html>
+<head>
+<title>redirect</title>
+<meta http-equiv="refresh" content="0; url=$(link-redirect)">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="-1">
+</head>
+<body>
+<script>window.location.href ='http://$(hostname)/login'</script>
+<script>setTimeout(function(){window.location.href ='http://$(hostname)/login'}, 500);</script>
+</body>
+</html>
