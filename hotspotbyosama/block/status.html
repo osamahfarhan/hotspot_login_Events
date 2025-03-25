@@ -1,0 +1,45 @@
+<html lang="ar" dir="rtl">
+    <head>
+    <meta http-equiv="Cache-Control" content="max-age=0"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT"/>
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../extra.css">
+    <link rel="stylesheet" href="../sw.css">
+    <link rel="stylesheet" href="../osa.css">
+    <link rel="stylesheet" href="../color.css">
+    $(if session-time-left-secs == 1)<meta http-equiv="refresh" content="0; url='/login?dst=5'">$(else)<meta http-equiv="refresh" content="2">$(endif)
+    $(if username != 'BLOCKED')<meta http-equiv="refresh" content="0; url='/login?dst=5'">$(endif)
+<style>
+</style>
+</head>
+<body>
+    <main class="container" style="min-height:660px;">
+        <div class="screen" style="min-height:660px;">
+            <div class="screen-content cent" style="height:500px;">
+                <div class="app active showen" id="block" >
+                <div>
+                    <div class="wrapper">
+                        <p class="title" style="color: red;direction: rtl;">انت محظور لمدة $(idle-timeout) دقائق</span></p>
+                        <p class="title"> <span></span>  لقد تم حظرك بسبب محاولات تسجيل الدخول الكثيرة الخاطئة</p>
+                        <div class="contact-text cent" style=" display: flex; align-content: center; justify-content: center;">
+                            <div class="block-app" style="display: flex;">
+                            <div id='conterd' class='countdown' style="position:relative;position:relative;padding: 0;margin: 0;"><br>
+                            <div id='tiles'><span>$(session-time-left-secs)</span></div>
+                            <div class='labels'><li>ثواني</li></div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="screen-background"><span class="shape shape4 color-bg-90deg"></span><span class="shape shape3 color-bg-180deg"></span><span class="shape shape2 color-bg-90deg"></span><span class="shape shape1"></span></div>
+        </div>
+</main>
+<script src="../helper.js"></script>
+<footer></footer></body>
+<!-- $(if http-header == "Refresh")1$(if session-time-left-secs == 1);url=/login?dst=5$(endif)$(endif) -->
+</html>
