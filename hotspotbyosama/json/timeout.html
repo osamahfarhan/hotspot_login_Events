@@ -1,9 +1,0 @@
-$(if http-status == 200)OK$(endif)
-$(if http-header == "Cache-Control")no-store$(endif)
-$(if http-header == "Content-Type")application/json$(endif)
-$(if http-header == "Access-Control-Allow-Origin")*$(endif)
-$(if http-header == "Cross-Origin-Resource-Policy")cross-origin$(endif)
-{
-    "error":"request timeout",
-    "var":"$(var-esc)"
-}

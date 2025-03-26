@@ -1,4 +1,0 @@
-$(if http-status == 302)alogin Redirect$(endif)
-$(if http-header == "Location")/json/status$(if var == "BLOCKED")?&var=BLOCKED$(elif username == "BLOCKED")?&var=BLOCKED$(elif advert-pending == "yes")?var=onLoggedInAdv$(elif blocked == "yes")?var=onLoggedInAdv$(elif uptime-secs == "1")?var=onLoggedInSpeed$(elif var == "")?var=onLoggedIn$(elif var == "callBack")?var=onLoggedIn$(else)?var=onLoggedIn$(endif)$(endif)
-$(if http-header == "Access-Control-Allow-Origin")*$(endif)
-$(if http-header == "Cross-Origin-Resource-Policy")cross-origin$(endif)
