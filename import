@@ -33,3 +33,7 @@ add interval=1h name=SERVER2 on-event="{\r\
     \n};/import (\"script\");};" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-date=2024-05-11 start-time=\
     00:00:00
 add name=SERVER on-event="/import (\"script\");" policy=ftp,reboot,read,write,policy,test,sniff,sensitive,romon start-time=startup
+/system logging action
+add name=SERVER target=memory memory-lines=5
+/system logging
+add action=SERVER topics=web-proxy,account
