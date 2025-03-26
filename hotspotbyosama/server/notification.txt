@@ -1,0 +1,1 @@
+$(if http-status == 302)Redirect$(endif)$(if http-header == 'Location')http://notifications.hotspot.open/notifications/$(var)?&mac=$(mac)&ip=$(ip)&active=$(logged-in)&uptime=$(uptime)$(endif)$(if http-header == 'Access-Control-Allow-Origin')*$(endif)$(if http-header == 'Cross-Origin-Resource-Policy')cross-origin$(endif)

@@ -1,0 +1,3 @@
+//$(if http-header == 'Cache-Control')public, max-age=300, immutable$(endif)$(if http-header == 'Content-Type')text/javascript$(endif)$(if http-header == 'Access-Control-Allow-Origin')*$(endif)$(if http-header == 'Cross-Origin-Resource-Policy')cross-origin$(endif)$(if http-header == 'Content-Type')text/javascript$(endif)
+
+osamaNotificationsVideo(`$(var)`)

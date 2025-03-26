@@ -1,0 +1,105 @@
+@-webkit-keyframes resize {
+    to {
+        height: 100%;
+    }
+}
+
+@keyframes resize {
+    to {
+        height: 100%;
+    }
+}
+#allusers option{
+width: 50px;
+}
+#allusers{
+    width: 20px;
+}
+#speed-show-up label {
+    color: #fff;
+    align-items: center;
+    width: 17px;
+    font-weight: 300;
+    font-size: larger;
+    padding-bottom: 10px;
+}
+
+#speed-show-up {
+    font-size: 17px;
+    font-weight: 300;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Almarai, sans-serif;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    z-index: 1001;
+    padding-top: 200px;
+    padding-left: 50px;
+}
+
+.speedshowupvertical {
+    color: #fff;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Almarai, sans-serif;
+    z-index: 1010;
+}
+.showup {
+    display: block;
+    height: 1%;
+    -webkit-animation: resize .3s .0s linear;
+    animation: resize .3s .0s linear
+}
+#speed-show-wrapper {
+    color: #fff;
+    position: relative;
+    padding: 17px;
+    position: absolute;
+    border-radius: 7px;
+    box-shadow: 0 4px 8px 0 rgb(0, 0, 0);
+    transition: 0.3s;
+    width: 90%;
+    margin: auto;
+    height: 50%;
+    width: 90%;
+    top:20%;
+    left: 5%;
+    text-align: right;
+}
+
+#speed-show-wrapper .social-login button {
+    display: grid;
+    place-content: center;
+    color: white;
+    --border-angle: 0turn;
+    --main-bg: conic-gradient(from var(--border-angle), #213, #112 5%, #112 60%, #213 95%);
+    border: solid 2px transparent;
+    border-radius: 2em;
+    --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
+    background: var(--main-bg) padding-box, var(--gradient-border) border-box, var(--main-bg) border-box;
+    background-position: center center;
+    animation: bg-spin 3s linear infinite;
+}
+
+@keyframes bg-spin {
+    to {
+        --border-angle: 1turn;
+    }
+}
+
+.box:hover {
+    animation-play-state: paused;
+}
+
+@property --border-angle {
+    syntax: "<angle>";
+    inherits: true;
+    initial-value: 0turn;
+}
