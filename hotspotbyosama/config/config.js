@@ -32,18 +32,4 @@ Config({
     "login-speeds": { "SPN": ["سرعة اقتصادية 1M ", "  سرعة عادية 2M ", " سرعة متوسطة 8M", "سرعة عالية 16M","مفتوح 200M"] },
     "redirect-to-esterahah": "mobasher.html", 
     "redirect-to-mobasher": "mobasher.html", 
-    "profiles": [
-        
-        { "price": "200 ريال", "time": "مفتوح", "transfer": "400 ميجا", "validity": "3 أيام" },
-        { "price": "300 ريال", "time": "مفتوح", "transfer": "600 ميجا", "validity": "5 أيام" },
-        { "price": "500 ريال", "time": "مفتوح", "transfer": "1000 ميجا", "validity": "اسبوع" },
-        { "price": "1000 ريال", "time": "مفتوح", "transfer": "3000 ميجا", "validity": "أسبوعين" },
-        { "price": "3000 ريال", "time": "مفتوح", "transfer": "10 جيجا", "validity": "شهر" },
-    ], 
-    "sell-points": [
-    { "name": " بقالة حسن براري " },
-    { "name": " " },
-    { "name": "  " },
-    { "name": " " },
-    ]
 })
