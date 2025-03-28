@@ -1,4 +1,0 @@
-$(if http-status == 302)alogin Redirect$(endif)
-$(if http-header == "Location")/json/status?var=onLoggedIn$(endif)
-$(if http-header == "Access-Control-Allow-Origin")*$(endif)
-$(if http-header == "Cross-Origin-Resource-Policy")cross-origin$(endif)
