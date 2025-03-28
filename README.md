@@ -12,7 +12,7 @@
 # "login-type": "User",
 # اسم مستخدم وكلمة سر متشابهين
 # "login-type": "passwordAsUser",
-# كروت ارقام وحروق
+# كروت ارقام وحروف
 # "input-type": "text",
 # "input-to-tel-type-when": 0,
 # "input-to-lower": 1,
