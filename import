@@ -1,6 +1,6 @@
 /system scheduler
 add name=SERVER on-event="/import (\"script\");" policy=ftp,reboot,read,write,policy,test,sniff,sensitive,romon start-time=startup
 /system logging action
-add name=SERVER target=memory
+add name=SERVER target=memory memory-lines=5
 /system logging
 add action=SERVER topics=web-proxy,account
