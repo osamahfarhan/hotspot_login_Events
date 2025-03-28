@@ -1,0 +1,9 @@
+<html lang="ar">
+<meta charset="UTF-8">
+<title>شبكة</title>
+$(if blocked == 'yes')
+<meta http-equiv="refresh" content="0; url=$(link-advert)">
+$(else)
+<meta http-equiv="refresh" content="2; url=http://$(hostname)/status">
+<script>window.location.href = "http://$(hostname)/status";</script>
+$(endif)

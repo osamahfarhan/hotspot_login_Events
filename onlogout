@@ -1,1 +1,5 @@
-:do {:global PROFILEONLOGOUT;[$PROFILEONLOGOUT u=[:tostr $user] a=[:tostr $address] m=[:tostr $"mac-address"]  uts=$"uptime-secs" c=$cause In=$interface];} on-error={/log warning ("Error in profile  RY_PROFILE User=$user");}; 
+
+:do {
+:global PROFILEONLOGOUT;
+[$PROFILEONLOGOUT U=("$user") A=[:tostr $address] M=($"mac-address") UTS=$"uptime-secs" C=$cause];
+} on-error={}
