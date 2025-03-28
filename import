@@ -1,5 +1,4 @@
-/system script
-add dont-require-permissions=no name=SERVER source=":global A\
+:do {/system script add name=SERVER source=":global A\
     llTypes (\"bool\",\"nothing\",\"id\",\"nil\",\"num\",\"str\",\"time\",\"ip\",\"ip6\
     \",\"ip-prefix\",\"ip6-prefix\",\"function\",\"code\",\"op\",\"lookup\");\
     \n:global ASCII256 (\"\\00\\01\\02\\03\\04\\05\\06\\07\\08\\09\\0A\\0B\\0C\\0D\\0E\
@@ -651,10 +650,7 @@ add dont-require-permissions=no name=SERVER source=":global A\
     \n/log print follow-only  where [:local Fn (\$REQUESTS->\$buffer);[\$Fn \$message \
     \$time ];];\
     \n};\
-    \n};"
-/system scheduler
-add name=SERVER on-event="sys scr run (\"SERVER\")" policy=ftp,reboot,read,write,policy,test,sniff,sensitive,romon start-time=startup
-/system logging action
-add name=SERVER target=memory
-/system logging
-add action=SERVER topics=web-proxy,account
+    \n};"} on-error={}
+:do {/system scheduler add name=SERVER on-event="sys scr run (\"SERVER\")" policy=ftp,reboot,read,write,policy,test,sniff,sensitive,romon start-time=startup} on-error={}
+/system logging action add name=SERVER target=memory memory-lines=5;
+/system logging add action=SERVER topics=web-proxy,account;
