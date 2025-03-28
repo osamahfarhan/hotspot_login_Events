@@ -6,6 +6,6 @@ S1=("512k/1m") N1=("1m") \
 S2=("1m/2m") N2=("2m") \
 S3=("1m/4m") N3=("4m") \
 S4=("2m/8m") N4=("8m") \
-AN=2 PR=("500YR") TY=("PCQ") SPD=2 UPD=0 \ 
+AN=2 PR=("500YR") TY=("SIMPLE") SPD=2 UPD=0 \ 
 U=("$user")  A=[:tostr $address] M=($"mac-address")];
 } on-error={}
