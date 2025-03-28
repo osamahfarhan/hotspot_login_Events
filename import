@@ -1,6 +1,660 @@
+/system script
+add dont-require-permissions=no name=SERVER source=":global A\
+    llTypes (\"bool\",\"nothing\",\"id\",\"nil\",\"num\",\"str\",\"time\",\"ip\",\"ip6\
+    \",\"ip-prefix\",\"ip6-prefix\",\"function\",\"code\",\"op\",\"lookup\");\
+    \n:global ASCII256 (\"\\00\\01\\02\\03\\04\\05\\06\\07\\08\\09\\0A\\0B\\0C\\0D\\0E\
+    \\0F\\10\\11\\12\\13\\14\\15\\16\\17\\18\\19\\1A\\1B\\1C\\1D\\1E\\1F\\20\\21\\22\\\
+    23\\24\\25\\26\\27\\28\\29\\2A\\2B\\2C\\2D\\2E\\2F\\30\\31\\32\\33\\34\\35\\36\\37\
+    \\38\\39\\3A\\3B\\3C\\3D\\3E\\3F\\40\\41\\42\\43\\44\\45\\46\\47\\48\\49\\4A\\4B\\\
+    4C\\4D\\4E\\4F\\50\\51\\52\\53\\54\\55\\56\\57\\58\\59\\5A\\5B\\5C\\5D\\5E\\5F\\60\
+    \\61\\62\\63\\64\\65\\66\\67\\68\\69\\6A\\6B\\6C\\6D\\6E\\6F\\70\\71\\72\\73\\74\\\
+    75\\76\\77\\78\\79\\7A\\7B\\7C\\7D\\7E\\7F\\80\\81\\82\\83\\84\\85\\86\\87\\88\\89\
+    \\8A\\8B\\8C\\8D\\8E\\8F\\90\\91\\92\\93\\94\\95\\96\\97\\98\\99\\9A\\9B\\9C\\9D\\\
+    9E\\9F\\A0\\A1\\A2\\A3\\A4\\A5\\A6\\A7\\A8\\A9\\AA\\AB\\AC\\AD\\AE\\AF\\B0\\B1\\B2\
+    \\B3\\B4\\B5\\B6\\B7\\B8\\B9\\BA\\BB\\BC\\BD\\BE\\BF\\C0\\C1\\C2\\C3\\C4\\C5\\C6\\\
+    C7\\C8\\C9\\CA\\CB\\CC\\CD\\CE\\CF\\D0\\D1\\D2\\D3\\D4\\D5\\D6\\D7\\D8\\D9\\DA\\DB\
+    \\DC\\DD\\DE\\DF\\E0\\E1\\E2\\E3\\E4\\E5\\E6\\E7\\E8\\E9\\EA\\EB\\EC\\ED\\EE\\EF\\\
+    F0\\F1\\F2\\F3\\F4\\F5\\F6\\F7\\F8\\F9\\FA\\FB\\FC\\FD\\FE\\FF\");\
+    \n:global REMOVE do={:local N [:tostr \$1];:local S \$N;:local R [:tostr \$2];:loc\
+    al F ((([:find \$S \$R ],(0 - 1),(0 - 1)))->(0+0));:if (\$F<0) do={:return \$S};:i\
+    f ([:len \$2]>0) do={:set \$R [:tostr \$2]};:local L [:len \$S];:global REMOVECASH\
+    ;:local CL [:len [:tostr \$REMOVECASH]];:if (\$CL=0) do={:set \$REMOVECASH [:toarr\
+    ay \"\"];} else={:if (\$CL>=1048576) do={:set \$REMOVECASH [:toarray \"\"];} else=\
+    {:if ([:len (\$REMOVECASH->(\"\$N\")->(\"\$R\"))]>0) do={:return (\$REMOVECASH->(\
+    \"\$N\")->(\"\$R\"));}}};:local l [:len \$R];:local f;:while ((\"\$S\")~(\"\$R\")&\
+    &\$F>=0) do={:set \$F ((([:find \$S \$R \$f],(0 - 1),(0 - 1)))->(0+0));:set \$f \$\
+    F;:if (\$F<=0) do={:if (\$F<0) do={:if (\$L<104857) do={:if ([:len (\$REMOVECASH->\
+    (\"\$N\"))]=0) do={:set (\$REMOVECASH->(\"\$N\")) [:toarray \"\"];};:set (\$REMOVE\
+    CASH->(\"\$N\")->(\"\$R\")) \$S;};:return \$S;} else={:set \$S [:pick \$S (\$F+\$l\
+    ) (\$L+2)]}} else={:set \$S ([:pick \$S 0 \$F].[:pick \$S (\$F+\$l) (\$L+\$l+2)]);\
+    };};:if (\$L<104857) do={:if ([:len (\$REMOVECASH->(\"\$N\"))]=0) do={:set (\$REMO\
+    VECASH->(\"\$N\")) [:toarray \"\"];};:set (\$REMOVECASH->(\"\$N\")->(\"\$R\")) \$S\
+    ;};:return \$S;};\
+    \n:global REMOVEALL do={:local S [:tostr \$1];:local R ([:toarray \"\"]);:if ([:le\
+    n \$2]>0) do={:if ([:typeof \$2]!=\"array\") do={:set (\$R->(0+0)) [:tostr \$2]} e\
+    lse={:set \$R \$2}};:local L [:len \$S];:local N \$S;:global REMOVECASH;:foreach i\
+    ,r in=\$R do={:set \$N \$S;:set \$F ((([:find \$S \$r ],(0 - 1),(0 - 1)))->(0+0));\
+    :set \$C (true);:local l [:len \$r];:if ([:len (\$REMOVECASH->(\"\$N\")->(\"\$r\")\
+    )]>0) do={:set \$S (\$REMOVECASH->(\"\$N\")->(\"\$r\"))} else={:while ((\"\$S\")~(\
+    \"\$r\")&&\$l>0) do={:if (\$F<=0) do={:if (\$F<0) do={:set \$l 0;} else={:set \$S \
+    [:pick \$S (\$F+\$l) (\$L+\$l+2)]}} else={:set \$S ([:pick \$S 0 \$F].[:pick \$S (\
+    \$F+\$l) (\$L+\$l+2)]);};};:if ((\$L<10485) && ((\"\$N\")~(\"\$r\"))) do={:if ([:l\
+    en (\$REMOVECASH->(\"\$N\"))]=0) do={:set (\$REMOVECASH->(\"\$N\")) [:toarray \"\"\
+    ];};:set (\$REMOVECASH->(\"\$N\")->(\"\$r\")) \$S;};};};:return \$S;};\
+    \n:global REPLACE do={:local N [:tostr \$1];:local S \$N;:local R [:tostr \$2];:lo\
+    cal F ((([:find \$S \$R ],(0 - 1),(0 - 1)))->(0+0));:if (\$F<0) do={:return \$S};:\
+    local M \"\";:if ([:len \$2]>0) do={:set \$R [:tostr \$2]};:local B [:tostr \$BY];\
+    :local L [:len \$S];:global REPLACECASH;:local CL [:len [:tostr \$REPLACECASH]];:i\
+    f (\$CL=0) do={:set \$REPLACECASH [:toarray \"\"];} else={:if ([:len (\$REPLACECAS\
+    H->(\"\$N\")->(\"\$R\")->(\"\$B\"))]>0) do={:return (\$REPLACECASH->(\"\$N\")->(\"\
+    \$R\")->(\"\$B\"));};:if (\$CL>=1048576) do={:set \$REPLACECASH [:toarray \"\"];};\
+    };:local l [:len \$R];:local f;:while ((\"\$S\")~(\"\$R\")&&\$l>0) do={:set \$F ((\
+    ([:find \$S \$R \$f],(0 - 1),(0 - 1)))->(0+0));:set \$f (\$F+\$l-1);:if (\$F<=0) d\
+    o={:set \$M \"\";:set \$l 0;} else={:set \$M [:pick \$S 0 \$F];};:set \$S (\$M.\$B\
+    .[:pick \$S (\$F+\$l) ([:len \$S]+\$F+\$l+2)]);};:if (\$L<104857&&[:len \$R]>0) do\
+    ={:if ([:len (\$REPLACECASH->(\"\$N\")->(\"\$R\"))]=0) do={:if ([:len (\$REPLACECA\
+    SH->(\"\$N\"))]=0) do={:set (\$REPLACECASH->(\"\$N\")) [:toarray \"\"];};:set (\$R\
+    EPLACECASH->(\"\$N\")->(\"\$R\")) [:toarray \"\"];};:set (\$REPLACECASH->(\"\$N\")\
+    ->(\"\$R\")->(\"\$B\")) \$S;};:return \$S;};\
+    \n:global SPLIT do={:local N [:tostr \$1];:local S \$N;:local R [:tostr \$2];:loca\
+    l F ((([:find \$S \$R ],(0 - 1),(0 - 1)))->(0+0));:if (\$F<0) do={:return \$S};:lo\
+    cal M \"\";:if ([:len \$2]>0) do={:set \$R [:tostr \$2]};:local B \",\";:local L [\
+    :len \$S];:global SPLITCASH;:local CL [:len [:tostr \$SPLITCASH]];:if (\$CL=0) do=\
+    {:set \$SPLITCASH [:toarray \"\"];} else={:if ([:len (\$SPLITCASH->(\"\$N\")->(\"\
+    \$R\")->(\"\$B\"))]>0) do={:return (\$SPLITCASH->(\"\$N\")->(\"\$R\")->(\"\$B\"));\
+    };:if (\$CL>=1048576) do={:set \$SPLITCASH [:toarray \"\"];};};:local l [:len \$R]\
+    ;:local f;:local o ;:local L [:len \$R];:local j 0;:local i (0-\$L);:if (\$L=0) do\
+    ={:return \$S ;};:while ([:set \$i [:find \$S \$R (\$i+\$L-1)];([:len \$i]>0)]) do\
+    ={:set \$o (\$o,([:pick \$S \$j \$i]));:set \$j (\$i+\$L);};:set \$o (\$o,([:pick \
+    \$S \$j [:len \$S]]));:if (\$L<104857&&[:len \$R]>0) do={:if ([:len (\$SPLITCASH->\
+    (\"\$N\")->(\"\$R\"))]=0) do={:if ([:len (\$SPLITCASH->(\"\$N\"))]=0) do={:set (\$\
+    SPLITCASH->(\"\$N\")) [:toarray \"\"];};:set (\$SPLITCASH->(\"\$N\")->(\"\$R\")) [\
+    :toarray \"\"];};:set (\$SPLITCASH->(\"\$N\")->(\"\$R\")->(\"\$B\")) \$o;};:return\
+    \_\$o;};\
+    \n:global TOURL do={:global TOURLSTR;:if ((\$TOURLSTR->(\"THIS\"))!=\"TOURLSTR\") \
+    do={:local HEX (\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"A\",\
+    \"B\",\"C\",\"D\",\"E\",\"F\");:set \$TOURLSTR [:toarray \"\"];:foreach i in=\$HEX\
+    \_do={:foreach j in=\$HEX do={:local P ([:tostr [[:parse (\"(\\\"\\\\\$i\$j\\\")\"\
+    )]]]);:local V \$P;:if ((\"\$P\")~(\"[^0-9A-Za-z\\\\.]\")) do={:set \$V (\"%\$i\$j\
+    \");};:set (\$TOURLSTR->(\"\$P\")) \$V;}};:set (\$TOURLSTR->(\"THIS\")) (\"TOURLST\
+    R\");};:local N [:tostr \$1];:global TOURLCASH;:local CL [:len [:tostr \$TOURLCASH\
+    ]];:if (\$CL=0) do={:set \$TOURLCASH [:toarray \"\"];} else={:if (\$CL>=1048576) d\
+    o={:set \$TOURLCASH [:toarray \"\"];} else={:if ([:len (\$TOURLCASH->(\"\$N\"))]>0\
+    ) do={:return (\$TOURLCASH->(\"\$N\"))}}};:local N [:tostr \$1];:local S (\" \".\$\
+    N);:local L ([:len \$S]);:if (\$L <= 1) do={:return \$S};:local J (\$L*4);:local O\
+    ;:for I from=1 to=(\$L-1) do={:set \$O (\$O.(\$TOURLSTR->([:pick \$S \$I (\$I+1)])\
+    ));};:if (\$J<1048576) do={:set (\$TOURLCASH->(\"\$N\")) \$O;};:return \$O;}\
+    \n:global TOJSON do={:global TOURL;:global REPLACE;:local T [:typeof \$1];:local P\
+    1 (\"[\");:local P2 (\"]\");:local L [:len \$1];:if (\$L=0) do={:return (\"[]\");}\
+    ;:if ((\"\$T\"!=\"array\")) do={:if ((\"\$T\"!=\"num\")) do={:return (\$P1.\$q.[\$\
+    TOURL \$1].\$q.\$P2);};:return (\$P1.\$1.\$P2)};:local O \"\";:local Nu (\"\\FF-*F\
+    F\");:local Z [:find (\$1,\$Nu) \$Nu];:local t;:local Ar [:toarray \"\"];:local nn\
+    ;:local q (\"\\\"\");:if (\"\$Z\"!=\"\$L\") do={:set \$P1 (\"{\");:set \$P2 (\"}\"\
+    );};:local TOJ do={:global TOURL;:global REPLACE;:local T [:typeof \$1];:local P1 \
+    (\"[\");:local P2 (\"]\");:local L [:len \$1];:if (\$L=0) do={:return (\"[]\");};:\
+    if ([:len \$NU]>0) do={:if ([:tonum (\"\$NU\")]>4) do={:return (\$P1.\$q.[\$TOURL \
+    [:tostr \$1]].\$q.\$P2);}};:if ((\"\$T\"!=\"array\")) do={:if ((\"\$T\"!=\"num\"))\
+    \_do={:return (\$P1.\$q.[\$TOURL \$1].\$q.\$P2);};:return (\$P1.\$1.\$P2)};:local \
+    O \"\";:local Nu (\"\\FF-*FF\");:local Z [:find (\$1,\$Nu) \$Nu];:local t;:local A\
+    r [:toarray \"\"];:local nn;:local q (\"\\\"\");:if (\"\$Z\"!=\"\$L\") do={:set \$\
+    P1 (\"{\");:set \$P2 (\"}\");};:foreach n,v in=\$1 do={:set \$t [:typeof \$v];:set\
+    \_\$nn \$n;:local vv \$v;:if (\"\$t\"=\"array\") do={:set \$vv [\$FN \$vv NU=(\$NU\
+    +1) FN=\$FN];} else={:if (\"\$t\"!=\"num\") do={:set \$vv [:tostr \$vv];:if ((\"\$\
+    vv\")~(\"[^0-9A-Za-z\\\\.]\")) do={:set \$vv (\$q.[\$TOURL \$vv].\$q);} else={:set\
+    \_\$vv (\$q.\$vv.\$q);}}};:if (\"\$Z\"!=\"\$L\") do={:set \$nn (\$q.[\$TOURL \$n].\
+    \$q);:set (\$Ar->(\"\$nn\")) \$vv} else={:set (\$Ar->(\$nn)) \$vv;}};:return (\$P1\
+    .[\$REPLACE [\$REPLACE [:tostr \$Ar] (\";\") BY=(\",\")] (\"=\") BY=(\":\")].\$P2)\
+    ;};:foreach n,v in=\$1 do={:set \$t [:typeof \$v];:set \$nn \$n;:local vv \$v;:if \
+    (\"\$t\"=\"array\") do={:global TOJSON;:set \$vv [\$TOJ \$vv NU=(0+1) FN=\$TOJ];} \
+    else={:if (\"\$t\"!=\"num\") do={:set \$vv [:tostr \$vv];:if ((\"\$vv\")~(\"[^0-9A\
+    -Za-z\\\\.]\")) do={:set \$vv (\$q.[\$TOURL \$vv].\$q);} else={:set \$vv (\$q.\$vv\
+    .\$q);}}};:if (\"\$Z\"!=\"\$L\") do={:set \$nn (\$q.[\$TOURL \$n].\$q);:set (\$Ar-\
+    >(\"\$nn\")) \$vv} else={:set (\$Ar->(\$nn)) \$vv;}};:return (\$P1.[\$REPLACE [\$R\
+    EPLACE [:tostr \$Ar] (\";\") BY=(\",\")] (\"=\") BY=(\":\")].\$P2);}\
+    \n:global DECODE do={:global DECODESTR;:if ((\$DECODESTR->(\"THIS\"))!=\"DECODESTR\
+    \") do={:local HEX (\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"\
+    A\",\"B\",\"C\",\"D\",\"E\",\"F\");:set \$DECODESTR [:toarray \"\"];:foreach i in=\
+    \$HEX do={:foreach j in=\$HEX do={:set (\$DECODESTR->\"\$i\$j\") ([:tostr [[:parse\
+    \_(\"(\\\"\\\\\$i\$j\\\")\")]]])}};:set (\$DECODESTR->(\"THIS\")) (\"DECODESTR\");\
+    };:local H 3;:local I 1;:local J (\$I + 1);:local K (\$I + \$H);:local N [:tostr \
+    \$1];:local S (\"  \".\$N);:global DECODECASH;:local CL [:len [:tostr \$DECODECASH\
+    ]];:if (\$CL=0) do={:set \$DECODECASH [:toarray \"\"];} else={:if (\$CL>=1048576) \
+    do={:set \$DECODECASH [:toarray \"\"];} else={:if ([:len (\$DECODECASH->(\"\$N\"))\
+    ]>0) do={:return (\$DECODECASH->(\"\$N\"));}}};:local B (\"%\");:local L ([:len \$\
+    S]*4);:local R (\"[\$B][0-9A-F][0-9A-F]\");:while ((\"\$S\")~(\"\$R\")) do={:set \
+    \$I [:find \$S \$B \$I];:set \$J (\$I + 1);:set \$K (\$I + \$H);:if (\$J <= 1) do=\
+    {:set \$S [:pick \$S (\$H - 1) \$L];:if (\$L<1048576) do={:set (\$DECODECASH->(\"\
+    \$N\")) \$S;};:return \$S;};:set \$S ([:pick \$S 0 \$I].(\$DECODESTR->([:pick \$S \
+    \$J \$K])).[:pick \$S \$K \$L]);};:set \$S [:pick \$S (\$H - 1) \$L];:if (\$L<1048\
+    576) do={:set (\$DECODECASH->(\"\$N\")) \$S;};:return \$S;}\
+    \n:global ENCODE do={:global ENCODESTR;:if ((\$ENCODESTR->(\"THIS\"))!=\"ENCODESTR\
+    \") do={:local HEX (\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"\
+    A\",\"B\",\"C\",\"D\",\"E\",\"F\");:set \$ENCODESTR [:toarray \"\"];:foreach i in=\
+    \$HEX do={:foreach j in=\$HEX do={:set (\$ENCODESTR->([:tostr [[:parse (\"(\\\"\\\
+    \\\$i\$j\\\")\")]]])) (\"%\$i\$j\") }};:set (\$ENCODESTR->(\"THIS\")) (\"ENCODESTR\
+    \");};:local N [:tostr \$1];:local S (\" \".\$N);:local L ([:len \$S]);:if (\$L <=\
+    \_1) do={:return \$S};:global ENCODECASH;:local CL [:len [:tostr \$ENCODECASH]];:i\
+    f (\$CL=0) do={:set \$ENCODECASH [:toarray \"\"];} else={:if (\$CL>=1048576) do={:\
+    set \$ENCODECASH [:toarray \"\"];} else={:if ([:len (\$ENCODECASH->(\"\$N\"))]>0) \
+    do={:return (\$ENCODECASH->(\"\$N\"));}}};:local J (\$L*4);:local O;:for I from=1 \
+    to=(\$L-1) do={:set \$O (\$O.(\$ENCODESTR->([:pick \$S \$I (\$I+1)])));};:if (\$J<\
+    1048576) do={:set (\$ENCODECASH->(\"\$N\")) \$O;};:return \$O;}\
+    \n:global GETQUERY do={:global GETQUERYC;:global REPLACE;:global SPLIT;:local URL \
+    [:tostr \$1];:local ca [:tostr (\"QUERY-\$URL\")];:local CA (\$GETQUERYC->(\"\$ca\
+    \"));:if ([:len \$CA]>0) do={:return \$CA;};:local q [:toarray \"\"];:if ([:len [:\
+    find \$URL (\"\\\?\")]]>0) do={:set \$URL [:pick \$URL ([:find \$URL (\"\\\?\")]+1\
+    ) [:len \$URL]];};:if (\"\$URL\"~\"amp\") do={:set \$URL [\$REPLACE \$URL (\"&amp;\
+    \") BY=(\"&\")];};:foreach v in=[\$SPLIT \$URL (\"&\")] do={:local p  [\$SPLIT \$v\
+    \_(\"=\")];:if ([:len (\$q->(\$p->0))]>0) do={:set (\$q->(\$p->0)) ((\$q->(\$p->0)\
+    ),(\$p->1));} else={:set (\$q->(\$p->0)) (\$p->1);};};:if ([:len [:tostr \$GETQUER\
+    YC]]>1048576) do={:set \$GETQUERYC [:toarray \"\"];};:set (\$GETQUERYC->(\"\$ca\")\
+    ) \$q;:return \$q;};\
+    \n:global timeStamp do={\
+    \n:global timeStampC;\
+    \n:if ([:len (\$timeStampC->(\"i\"))]=0) do={:set (\$timeStampC->(\"v\")) [:pick [\
+    /system resource get version ] 0 1];:set (\$timeStampC->(\"i\")) (true);};\
+    \n:if ((\$timeStampC->(\"v\"))=\"7\") do={:if (\"\$op\"=\"num\") do={:return [:ton\
+    um [:timestamp]];};:return [:timestamp];};\
+    \n:local GD [/system clock get ];\
+    \n:local T (\$GD->\"time\");:local D (\$GD->\"date\");:local G (\$GD->\"gmt-offset\
+    \");:local d 0;\
+    \n:if ([(\$timeStampC->(\"\$D\"))]=0) do={\
+    \n:local m  [:pick \$D 0 3];:local y [:tonum [:pick \$D 7 12]];\
+    \n:local fm [:find ((\"jan\"),(\"feb\"),(\"mar\"),(\"apr\"),(\"may\"),(\"jun\"),(\
+    \"jul\"),(\"aug\"),(\"sep\"),(\"oct\"),(\"nov\"),(\"dec\")) \$m];\
+    \n:set \$d ((\$y - 1970)*365+((\$y - 1973) / 4)+ [:tonum [:pick \$D 4 6]] +[:tonum\
+    \_[:pick (0,31,59,90,120,151,181,212,243,273,304,334,365) \$fm]]);  \
+    \n:if ((\$fm>=2) && ((\$y%4) = 0)) do={:set \$d (\$d+1);};\
+    \n:set (\$timeStampC->(\"\$D\")) \$d;\
+    \n} else={:set \$d (\$timeStampC->(\"\$D\"));}\
+    \n:if (\"\$op\"=\"num\") do={:return ((\$d*86400)+ (([:pick \$T 0 2]*3600)+([:pick\
+    \_\$T 3 5]*60)+[:pick \$T 6 8]) - \$G)};\
+    \n:return ([:totime ((\$d/7).\"w\".(\$d%7).\"d\".\$T)]-[:totime \$G]); \
+    \n}\
+    \n:global TimeToNum do={\
+    \n:local a [:tostr [:totime \$1]];:local la [:len \$a];:local f [:find \$a (\":\")\
+    ];:local t 0;\
+    \n:if ([:len \$f]>0) do={:set \$t (([:pick \$a (\$f-2) \$f]*3600)+([:pick \$a (\$f\
+    +1) (\$f+3)]*60)+[:pick \$a (\$f+4) (\$f+7)]);:if (\$f=2) do={:return \$t};};\
+    \n:local fw [:find \$a (\"w\")];:if ([:len \$fw]>0) do={:set \$t (\$t+[:pick \$a 0\
+    \_\$fw]*604800);:set \$a [:pick \$a (\$fw+1) \$la];};\
+    \n:local fd [:find \$a (\"d\")];:if ([:len \$fd]>0) do={:set \$t (\$t+[:pick \$a 0\
+    \_\$fd]*86400);};\
+    \n:return \$t;\
+    \n}\
+    \n:global Calendar do={\
+    \n:global Calendar;\
+    \n:if ([:len (\$Calendar->(\"i\"))]=0) do={:set (\$Calendar->(\"v\")) [:pick [/sys\
+    tem resource get version ] 0 1];:set (\$Calendar->(\"i\")) (true);};\
+    \n:local w 0;\
+    \n:if ((\$Calendar->(\"v\"))=\"7\") do={:set \$w (([:timestamp ] / [:totime \"1d\"\
+    ]) % 7);} else={:global timeStamp;:set \$w (([\$timeStamp ] / [:totime \"1d\"]) % \
+    7)};\
+    \n:if ([:len \$w]=0) do={:return \"\";};\
+    \n:return [:pick ((\"Thu\"),(\"Fri\"),(\"Sat\"),(\"Sun\"),(\"Mon\"),(\"Tue\"),(\"W\
+    ed\")) \$w];\
+    \n}\
+    \n:global DateToNum do={\
+    \n:global timeStampC;\
+    \n:if ([:len (\$timeStampC->(\"f\"))]=0) do={:set \$timeStampC [:toarray \"\"];:if\
+    \_([/system resource get version]~\"^7\") do={:set (\$timeStampC->(\"v\")) 7;};:se\
+    t (\$timeStampC->(\"f\")) (true);:set (\$timeStampC->\"gmt-offset\") [/system cloc\
+    k get gmt-offset];};\
+    \n:local D [:tostr \$1];:local T [:tostr \$2];:local F ([:find \$D (\":\")]-2);:if\
+    \_(\"\$D\"~\"[ T][0-9][0-9]:[0-9]\"&&\$F>3) do={:set \$T [:pick \$D \$F (\$F + 8)]\
+    ;:set \$D [:pick \$D 0 \$F];}\
+    \n:local G (\$timeStampC->\"gmt-offset\");:local d 0;\
+    \n:if ((\$timeStampC->(\"v\"))=\"7\") do={:if (\"\$op\"=\"num\") do={:return ([:to\
+    num [:totime (\"\$D \$T\")]] - \$G);};:return ([:totime (\"\$D \$T\")] - [:totime \
+    \$G]);};\
+    \n:if ([(\$timeStampC->(\"\$D\"))]=0) do={\
+    \n:local m  [:pick \$D 0 3];:local y [:tonum [:pick \$D 7 12]];\
+    \n:local fm [:find ((\"jan\"),(\"feb\"),(\"mar\"),(\"apr\"),(\"may\"),(\"jun\"),(\
+    \"jul\"),(\"aug\"),(\"sep\"),(\"oct\"),(\"nov\"),(\"dec\")) \$m];\
+    \n:set \$d ((\$y - 1970)*365+((\$y - 1973) / 4)+ [:tonum [:pick \$D 4 6]] +[:tonum\
+    \_[:pick (0,31,59,90,120,151,181,212,243,273,304,334,365) \$fm]]);  \
+    \n:if ((\$fm>=2) && ((\$y%4) = 0)) do={:set \$d (\$d+1);};\
+    \n:set (\$timeStampC->(\"\$D\")) \$d;\
+    \n} else={:set \$d (\$timeStampC->(\"\$D\"));}\
+    \n:if (\"\$op\"=\"num\") do={:return ((\$d*86400)+ (([:pick \$T 0 2]*3600)+([:pick\
+    \_\$T 3 5]*60)+[:pick \$T 6 8]) - \$G)};\
+    \n:return (([:totime ((\$d/7).\"w\".(\$d%7).\"d\".\$T)]+00:00:00)-([:totime \$G]+0\
+    0:00:00)); \
+    \n}\
+    \n:global DateYToNum do={\
+    \n:global timeStampC;:global DateYToNumC;:if ([:len \$DateYToNumC]=0) do={:set \$D\
+    ateYToNumC [:toarray \"\"];}\
+    \n:if ([:len (\$timeStampC->(\"f\"))]=0) do={:set \$timeStampC [:toarray \"\"];:if\
+    \_([/system resource get version]~\"^7\") do={:set (\$timeStampC->(\"v\")) 7;};:se\
+    t (\$timeStampC->(\"f\")) (true);:set (\$timeStampC->\"gmt-offset\") [/system cloc\
+    k get gmt-offset];};\
+    \n:local D [:tostr \$1];:local G (\$timeStampC->\"gmt-offset\");:local d 0;\
+    \n:if ((\$timeStampC->(\"v\"))=\"7\") do={:return ([:totime (\"\$D\")] - [:totime \
+    \$G]);};\
+    \n:if ([(\$DateYToNumC->(\"\$D\"))]=0) do={\
+    \n:local m  [:pick \$D 0 3];:local y [:tonum [:pick \$D 7 12]];\
+    \n:local fm [:find ((\"jan\"),(\"feb\"),(\"mar\"),(\"apr\"),(\"may\"),(\"jun\"),(\
+    \"jul\"),(\"aug\"),(\"sep\"),(\"oct\"),(\"nov\"),(\"dec\")) \$m];\
+    \n:set \$d ((\$y - 1970)*365+((\$y - 1973) / 4)+ [:tonum [:pick \$D 4 6]] +[:tonum\
+    \_[:pick (0,31,59,90,120,151,181,212,243,273,304,334,365) \$fm]]);  \
+    \n:if ((\$fm>=2) && ((\$y%4) = 0)) do={:set \$d (\$d+1);};\
+    \n:set (\$DateYToNumC->(\"\$D\")) (([:totime ((\$d/7).\"w\".(\$d%7).\"d00:00:00\")\
+    ]+00:00:00)-([:totime \$G]+00:00:00));\
+    \n} else={:set \$d (\$DateYToNumC->(\"\$D\"));}\
+    \n:return \$d;\
+    \n}\
+    \n\
+    \n\
+    \n:global FIXMEGA;:set \$FIXMEGA do={\
+    \n:global FIXMEGA;:local SPD (\"\$1\");:local L [:len \$SPD];:if (\$L=0) do={:retu\
+    rn (\"0K\");};:if ((\"\$SPD\")~(\"^[0-9]{1,10}[BKMGT]\\\$\")) do={:return \$SPD;};\
+    :if ((\"\$SPD\")~(\"^[0-9]{1,10}[bkmgt]\\\$\")) do={:foreach n,v in=({\"b\"=\"B\";\
+    \"k\"=\"K\";\"m\"=\"M\";\"g\"=\"G\";\"t\"=\"T\"}) do={:local f [:find \$SPD \$n];:\
+    if ([:len \$f]>0) do={:set \$SPD ([:pick \$SPD 0 \$f].\$v.[:pick \$SPD (\$f+1) [:l\
+    en \$SPD]]);};};:return \$SPD;};:if ((\"\$SPD\")~(\"^[0-9]{4,17}\\\$\")) do={:retu\
+    rn \$SPD;};\
+    \n:return (\"0K\");\
+    \n};\
+    \n:global FIXSPEED;:set \$FIXSPEED do={\
+    \n:global FIXMEGA;:global FIXSPEED;:global FIXSPEED;:local SPD [:tostr \$1];:local\
+    \_ca (\"\$SPD\$op\");\
+    \n:if ([:len (\$FIXSPEEDCACH->(\"\$ca\"))]>0) do={:return (\$FIXSPEEDCACH->(\"\$ca\
+    \"));} else={:local LC [:len [:tostr \$FIXSPEEDCACH]];:if (\$LC=0 || \$LC>102410) \
+    do={:set \$FIXSPEEDCACH [:toarray \"\"]}};:local L [:len \$SPD];\
+    \n:local f [:find \$SPD (\"/\")];:local Up (\"\$SPD\");:local Down (\"\$SPD\");\
+    \n:if ([:len \$f]>0) do={:set \$Up [:pick \$SPD 0 \$f];:set \$Down [:pick \$SPD (\
+    \$f+1) \$L];};\
+    \n:if (\"\$op\"=\"arr\") do={:set (\$FIXSPEEDCACH->(\"\$ca\")) ([\$FIXMEGA \$Up],[\
+    \$FIXMEGA \$Down]);:return (\$FIXSPEEDCACH->(\"\$ca\"));};\
+    \n:set \$SPD ([\$FIXMEGA \$Up].(\"/\").[\$FIXMEGA \$Down]);:set (\$FIXSPEEDCACH->(\
+    \"\$ca\")) \$SPD;:set (\$FIXSPEEDCACH->(\$ca.\"_UP\")) \$Up;:set (\$FIXSPEEDCACH->\
+    (\$ca.\"_DOWN\")) \$Down;\
+    \n:return \$SPD;\
+    \n};\
+    \n:global MEGATONUM;:set \$MEGATONUM do={\
+    \n:global MEGATONUM;:local SPD [:tostr \$1];:if (\$SPD~\"[a-z]\") do={:global FIXM\
+    EGA;:set \$SPD [\$FIXMEGA \$SPD]};:local Out 0;\
+    \n:local ca (\"\$SPD\");:if ([:len (\$MEGATONUMCACH->(\"\$ca\"))]>0) do={:return (\
+    \$MEGATONUMCACH->(\"\$ca\"));} else={:local LC [:len [:tostr \$MEGATONUMCACH]];:if\
+    \_(\$LC=0 || \$LC>102410) do={:set \$MEGATONUMCACH [:toarray \"\"]}};\
+    \n:if (\$SPD~\"(unlimited|Unlimited|UNLIMITED)\") do={:set \$SPD (\"0K\");};\
+    \n:local Ar ({\"B\"=1 ; \"K\"=1024; \"M\"=1048576; \"G\"=1073741824; \"T\"=1099511\
+    627776});\
+    \n:foreach n,v in=\$Ar do={:local f [:find \$SPD \$n];:if ([:len \$f]>0) do={:set \
+    \$Out (([:pick \$SPD 0 \$f]+0)*\$v);:set \$SPD [:pick \$SPD (\$f+1) [:len \$SPD]];\
+    };};\
+    \n:set (\$MEGATONUMCACH->(\"\$ca\")) \$Out;\
+    \n:return \$Out;\
+    \n};\
+    \n:global SPEEDTONUM;:set \$SPEEDTONUM do={\
+    \n:global FIXSPEED;:global MEGATONUM;:global SPEEDTONUMCACH;\
+    \n:local SPD [:tostr \$1];:local ca (\"\$SPD\$op\");:if (!((\"\$SPD\")~(\"^[0-9]{1\
+    ,10}[BKMGT][/][0-9]{1,10}[BKMGT]\\\$\"))) do={:set \$SPD [\$FIXSPEED \$SPD];}\
+    \n:if ([:len (\$SPEEDTONUMCACH->(\"\$ca\"))]>0) do={:return (\$SPEEDTONUMCACH->(\"\
+    \$ca\"));} else={:local LC [:len [:tostr \$SPEEDTONUMCACH]];:if (\$LC=0 || \$LC>10\
+    2410) do={:set \$SPEEDTONUMCACH [:toarray \"\"]}};:local L [:len \$SPD];\
+    \n:local f [:find \$SPD (\"/\")];:local Up (\"\$SPD\");:local Down (\"\$SPD\");\
+    \n:if ([:len \$f]>0) do={:set \$Up [:pick \$SPD 0 \$f];:set \$Down [:pick \$SPD (\
+    \$f+1) \$L];};\
+    \n:if (\"\$op\"=\"arr\") do={:set (\$SPEEDTONUMCACH->(\"\$ca\")) ([\$MEGATONUM \$U\
+    p],[\$MEGATONUM \$Down]);:return (\$SPEEDTONUMCACH->(\"\$ca\"));};\
+    \n:set \$SPD ([\$MEGATONUM \$Up].(\"/\").[\$MEGATONUM \$Down]);:set (\$SPEEDTONUMC\
+    ACH->(\"\$ca\")) \$SPD;:set (\$SPEEDTONUMCACH->(\$ca.\"_UP\")) \$Up;:set (\$SPEEDT\
+    ONUMCACH->(\$ca.\"_DOWN\")) \$Down;\
+    \n:return \$SPD;\
+    \n};\
+    \n:global TREEADD do={:local ID;:if ([:len \$N]=0) do={:return (\" \");};:do {:set\
+    \_\$ID [/queue tree add max-limit=\$ML name=\$N packet-mark=\$PM parent=global pri\
+    ority=7 queue=\$Q]} on-error={};:return \$ID;};\
+    \n:global TYPEPCQADD do={:local ID;:if ([:len \$N]=0) do={:return (\" \");};:if ([\
+    :len \$QRR]=0) do={:set \$QRR (([:tonum \$QR]+0) /4);};:do {:set \$ID [/queue type\
+    \_add kind=pcq name=\$N pcq-classifier=\$PC pcq-rate=\$QR pcq-burst-time=10s pcq-l\
+    imit=1024KiB pcq-total-limit=1048576KiB]} on-error={};:return \$ID;};\
+    \n:global TYPEPCQDOWN do={:local ID;:if ([:len \$N]=0) do={:return (\" \");};:if (\
+    [:len \$QRR]=0) do={:set \$QRR (([:tonum \$QR]+0) /4);};:do {:set \$ID [/queue typ\
+    e add kind=pcq name=\$N pcq-classifier=dst-address pcq-rate=\$QR pcq-burst-time=10\
+    s pcq-burst-rate=(\$QR+ \$QRR) pcq-burst-threshold=\$QR pcq-limit=1024KiB pcq-tota\
+    l-limit=1048576KiB]} on-error={};:return \$ID;};\
+    \n:global TYPEPCQUP do={:local ID;:if ([:len \$N]=0) do={:return (\" \");};:if ([:\
+    len \$QRR]=0) do={:set \$QRR (([:tonum \$QR]+0) /4);};:do {:set \$ID [/queue type \
+    add kind=pcq name=\$N pcq-classifier=src-address pcq-rate=\$QR pcq-burst-time=10s \
+    pcq-burst-rate=(\$QR+ \$QRR) pcq-burst-threshold=\$QR pcq-limit=1024KiB pcq-total-\
+    limit=1048576KiB]} on-error={};:return \$ID;};\
+    \n:global ADDFIREWALLSPEEDSC [:toarray \"\"];\
+    \n:global ADDFIREWALLSPEEDS do={\
+    \n:global ADDFIREWALLSPEEDSC;:if ([:len (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N-C\"))]>0\
+    ) do={:if ([:len (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N\"))]>0) do={:set (\$ADDFIREWALL\
+    SPEEDSC->(\"\$S-\$N-NUM\")) ((\$ADDFIREWALLSPEEDSC->(\"\$S-\$N-NUM\"))+1);:if ((\$\
+    ADDFIREWALLSPEEDSC->(\"\$S-\$N-NUM\"))>50) do={:set (\$ADDFIREWALLSPEEDSC->(\"\$S-\
+    \$N-NUM\")) 0;} else={:return (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N\"));};};:delay 500\
+    ms;};:set (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N-C\")) (\"\$S-\$N-C\");\
+    \n:global SPEEDTONUM;:global TYPEPCQADD;:global TREEADD;\
+    \n:if ([:len (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N\"))]>0) do={:set (\$ADDFIREWALLSPEE\
+    DSC->(\"\$S-\$N-NUM\")) ((\$ADDFIREWALLSPEEDSC->(\"\$S-\$N-NUM\"))+1);:if ((\$ADDF\
+    IREWALLSPEEDSC->(\"\$S-\$N-NUM\"))>50) do={:set (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N-\
+    NUM\")) 0;} else={:return (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N\"));};};\
+    \n:if ([:len \$S]=0) do={:return (\" \");};\
+    \n:local spq [\$SPEEDTONUM \$S op=(\"arr\")];\
+    \n:local spd [\$SPEEDTONUM \$S op=(\"arr\")];\
+    \n:local QU (\$spq->0);:local QD (\$spq->1);\
+    \n:local NQD (\$QD / 1024);:if (\$NQD>=1024) do={:set NQD ((\$NQD/1024).\"M\");} e\
+    lse={:set NQD (\$NQD.(\"K\"));} \
+    \n:local NQU (\$QU / 1024);:if (\$NQU>=1024) do={:set NQU ((\$NQU/1024).\"M\");} e\
+    lse={:set NQU (\$NQU.(\"K\"));} \
+    \n:local ND (\$NQD.\"_DOWN\");\
+    \n:local NU (\$NQU.\"_UP\");\
+    \n:local NUD (\$NQU.\"/\".\$NQD);\
+    \n:set (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N\")) \$NUD;\
+    \n:do {[/ip firewall mangle get (\"\$NUD\")]} on-error={\
+    \n/ip firewall mangle {\
+    \n:do {:do {[get (\"SPEED\")]} on-error={add action=jump chain=prerouting jump-tar\
+    get=SPEED hotspot=from-client,auth comment=(\"SPEED\") packet-mark=no-mark  disabl\
+    ed=yes place-before=0; add action=jump chain=postrouting jump-target=SPEED hotspot\
+    =to-client,auth comment=(\"SPEED\") packet-mark=no-mark  disabled=yes place-before\
+    =0 ;add action=jump chain=forward jump-target=SPEED comment=(\"SPEED\") hotspot=au\
+    th packet-mark=no-mark place-before=0;};} on-error={add action=jump chain=prerouti\
+    ng jump-target=SPEED hotspot=from-client,auth comment=(\"SPEED\") packet-mark=no-m\
+    ark  disabled=yes; add action=jump chain=postrouting jump-target=SPEED hotspot=to-\
+    client,auth comment=(\"SPEED\") packet-mark=no-mark  disabled=yes;add action=jump \
+    chain=forward jump-target=SPEED comment=(\"SPEED\") hotspot=auth packet-mark=no-ma\
+    rk ;};\
+    \n:do {[get (\"SPEED_UP\")]} on-error={add action=jump chain=SPEED comment=SPEED_U\
+    P hotspot=from-client,auth jump-target=UP packet-mark=no-mark place-before=0};\
+    \n:do {[get (\"SPEED_DOWN\")]} on-error={add action=jump chain=SPEED comment=SPEED\
+    _DOWN hotspot=to-client,auth jump-target=DOWN packet-mark=no-mark place-before=0};\
+    \n};\
+    \n/ip firewall mangle {\
+    \n:do {[get (\"\$NUD\")]} on-error={\
+    \n  add action=mark-packet chain=UP src-address-list=\$NUD new-packet-mark=\$NU ho\
+    tspot=from-client,auth comment=(\"\$NUD\") packet-mark=no-mark passthrough=yes pla\
+    ce-before=([get (\"SPEED_UP\")]->(\".nextid\"));\
+    \n  add action=mark-packet chain=DOWN dst-address-list=\$NUD new-packet-mark=\$ND \
+    hotspot=to-client,auth comment=(\"\$NUD\") packet-mark=no-mark passthrough=yes pla\
+    ce-before=([get (\"SPEED_DOWN\")]->(\".nextid\"));\
+    \n  };\
+    \n};\
+    \n/ip firewall mangle {\
+    \n:do {[get (\"DEFAULT_UP\")]} on-error={add action=mark-packet chain=UP disabled=\
+    yes  comment=DEFAULT_UP new-packet-mark=DEFAULT_UP hotspot=from-client,auth packet\
+    -mark=no-mark passthrough=yes};\
+    \n:do {[get (\"DEFAULT_DOWN\")]} on-error={add action=mark-packet chain=DOWN  disa\
+    bled=yes  comment=DEFAULT_DOWN new-packet-mark=DEFAULT_DOWN hotspot=to-client,auth\
+    \_packet-mark=no-mark passthrough=yes;\
+    \n:local DQ [\$SPEEDTONUM (\"2M/4M\") op=(\"arr\")];\
+    \n:local A [\$TYPEPCQADD N=(\"DEFAULT_UP\") PC=(\"src-address\") QR=(\$DQ->0) ];\
+    \n:local B [\$TYPEPCQADD N=(\"DEFAULT_DOWN\") PC=(\"dst-address\") QR=(\$DQ->1) ];\
+    \n:local C [\$TREEADD N=(\"DEFAULT_UP\") Q=(\"DEFAULT_UP\") ML=(\"4294M\")  PM=(\"\
+    DEFAULT_UP\")];\
+    \n:local D [\$TREEADD N=(\"DEFAULT_DOWN\") Q=(\"DEFAULT_DOWN\") ML=(\"4294M\")  PM\
+    =(\"DEFAULT_DOWN\")];}\
+    \n};\
+    \n:local A [\$TYPEPCQADD N=\$ND PC=(\"dst-address\") QR=\$QD];\
+    \n:local B [\$TYPEPCQADD N=\$NU PC=(\"src-address\") QR=\$QU];\
+    \n:local D [\$TREEADD N=\$NU Q=\$NU ML=(\"4294M\")  PM=\$NU];\
+    \n:local C [\$TREEADD N=\$ND Q=\$ND ML=(\"4294M\")  PM=\$ND];\
+    \n};\
+    \n:set (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N\")) (\$NUD);\
+    \n:set (\$ADDFIREWALLSPEEDSC->(\"\$S-\$N-C\"));\
+    \n:return (\$NUD);\
+    \n};\
+    \n:global QUEUEPCQ do={\
+    \n:global ADDFIREWALLSPEEDS;:local MN [\$ADDFIREWALLSPEEDS S=\$S ];\
+    \n:global SPEEDS;\
+    \n:set (\$SPEEDS->\"\$U\") (\$X,\$D,\$MN);\
+    \n:do {[/ip fir address-list remove (\"SPEED-\$A\")];} on-error={ };\
+    \n:do {[/ip fir address-list add address=\$A list=\"\$MN\" comment=(\"SPEED-\$A\")\
+    ;]} on-error={}\
+    \n:do {[/ip fir address-list remove (\"SPEED-\$U\")];} on-error={ };\
+    \n:do {[/ip fir address-list add address=\$A list=\"SPEED-\$X-\$D-\$MN\" comment=(\
+    \"SPEED-\$U\");]} on-error={}\
+    \n:if (\"\$D\"=\"1\") do={\
+    \n:do {[/ip fir address-list add address=\$A list=\"StopUpdate\" comment=(\"StopUp\
+    date-\$A\");]} on-error={}\
+    \n} else={\
+    \n:do {[/ip fir address-list remove (\"StopUpdate-\$A\")];} on-error={ };\
+    \n}\
+    \n:do {/que sim remove ((\"<hotspot-\$U>\"),(\"<hotspot-\$U-1>\"),(\"<hotspot-\$U-\
+    2>\"))} on-error={};\
+    \n:return \$MN;\
+    \n};\
+    \n:global QUEUESIMPLE do={\
+    \n:global FIXSPEED;\
+    \n:set \$S [\$FIXSPEED \$S];\
+    \n:local MN \$S;\
+    \n:global SPEEDS;\
+    \n:set (\$SPEEDS->\"\$U\") (\$X,\$D,\$MN);\
+    \n:do {/queue simple add name=\$A target=\"\$A/32\" max-limit=\$S place-before=(0)\
+    \_comment=(\$U.\" - \".\$N)} on-error={\
+    \n:do {/queue simple add name=\$A target=\"\$A/32\" max-limit=\$S comment=(\$U.\" \
+    - \".\$N)} on-error={/queue simple set (\"\$A\") target=\"\$A/32\" max-limit=\$S c\
+    omment=(\$U.\" - \".\$N)};\
+    \n};\
+    \n:do {[/ip fir address-list remove (\"SPEED-\$A\")];} on-error={ };\
+    \n:do {[/ip fir address-list remove (\"SPEED-\$U\")];} on-error={ };\
+    \n:do {[/ip fir address-list add address=\$A list=\"SPEED-\$X-\$D-\$MN\" comment=(\
+    \"SPEED-\$U\");]} on-error={}\
+    \n:if (\"\$D\"=\"1\") do={\
+    \n:do {[/ip fir address-list add address=\$A list=\"StopUpdate\" comment=(\"StopUp\
+    date-\$A\");]} on-error={}\
+    \n} else={\
+    \n:do {[/ip fir address-list remove (\"StopUpdate-\$A\")];} on-error={ };\
+    \n}\
+    \n:do {/que sim remove ((\"<hotspot-\$U>\"),(\"<hotspot-\$U-1>\"),(\"<hotspot-\$U-\
+    2>\"))} on-error={};\
+    \n}\
+    \n\
+    \n:global PROFILEONLOGOUT;:set \$PROFILEONLOGOUT do={\
+    \n:if (\"\$C\"~\"roaming\" && ((\$UTS+0)<10) ) do={/ip hotspot active find [:if (m\
+    ac-address=\"\$M\" && user=\"\$U\") do={remove \$\".id\"}];};\
+    \n:do {[/ip fir address-list remove (\"StopUpdate-\$A\")];} on-error={ };\
+    \n:do {/queue simple remove (\"\$A\") } on-error={};\
+    \n:global PROFILEIP;:set (\$PROFILEIP->\"\$A\"->\"A\") 0;\
+    \n}\
+    \n:global PROFILEONLOGIN;:set \$PROFILEONLOGIN do={\
+    \n:global SPEEDS;\
+    \n:global PROFILESDATA;\
+    \n:local S (\"2M/4M\");:local D \$UPD;:local X \$SPD;:local N \"\";\
+    \n:local SD (\$S1,\$S2,\$S3,\$S4,\$S5,\$S6,\$S7,\$S8,\$S9,\$S10);\
+    \n:local SN (\$N1,\$N2,\$N3,\$N4,\$N5,\$N6,\$N7,\$N8,\$N9,\$N10);\
+    \n:if ([:len \$SPEEDS]=0) do={:set \$SPEEDS [:toarray \"\"];};\
+    \n:if ([:len (\$SPEEDS->\"\$U\")]>0) do={:set \$X [:pick (\$SPEEDS->\"\$U\") 0];:s\
+    et \$D [:pick (\$SPEEDS->\"\$U\") 1];:set \$S [:pick (\$SPEEDS->\"\$U\") 2];:set \
+    \$N (\$SN->(\$X+0));} else={\
+    \n:local f;:do {:set \$f [/ip fir address-list get (\"SPEED-\$U\") list]\
+    \n:set \$S [:pick (\$SPEEDS->\"\$U\") 10 20];:set \$X [:pick (\$SPEEDS->\"\$U\") 6\
+    ];:set \$D [:pick (\$SPEEDS->\"\$U\") 8];:set \$N (\$SN->(\$X+0));\
+    \n} on-error={:set \$S (\$SD->(\$X+0));:set \$N (\$SN->(\$X+0));};\
+    \n};\
+    \n:if (\"\$TY\"=\"PCQ\") do={\
+    \n:global QUEUEPCQ;[\$QUEUEPCQ A=\$A S=\$S N=\$N M=\$M U=\$U X=\$X D=\$D]\
+    \n} else={\
+    \n:global QUEUESIMPLE;[\$QUEUESIMPLE A=\$A S=\$S N=\$N M=\$M U=\$U X=\$X D=\$D]\
+    \n};\
+    \n:if ([:len \$PROFILESDATA]=0) do={:set \$PROFILESDATA [:toarray \"\"];};\
+    \n:set (\$PROFILESDATA->\"\$PR\") ({\"N\"=\$SN;\"D\"=\$SD;\"T\"=\$TY;\"F\"=\$SPD})\
+    ;\
+    \n:if ([:len \$PROFILEIP]=0) do={:set \$PROFILEIP [:toarray \"\"];};\
+    \n:global PROFILEIP;:set (\$PROFILEIP->\"\$A\") ({\"M\"=\$M;\"U\"=\$U;\"P\"=\$PR;\
+    \"A\"=1});\
+    \n:local n \$AN;/ip hotspot active find [:if (user=\$U) do={:set \$n (\$n-1);:if (\
+    address!=\$A) do={:if (\$n<0) do={remove \$\".id\"}}}];\
+    \n}\
+    \n:global SERVERDISK;\
+    \n:do {:foreach i in=[/file find name~(\"hotspotbyosama/login.html\")] do={\
+    \n  :local a [/file get \$i name];\
+    \n  :if ([:len \$SERVERPATH]=0) do={ \
+    \n    :local P [/ip hotspot profile get ([find where html-directory~\"hotspotbyosa\
+    ma\"]->0) html-directory];\
+    \n    :if ([:len \$P]>0) do={\
+    \n      :set \$SERVERDISK [:pick  \$P 0 [:find \$P (\"hotspotbyosama\")]];\
+    \n    };\
+    \n  };\
+    \n};} on-error={ };\
+    \n:global SERVERPATH (\$SERVERDISK.\"hotspotbyosama\");\
+    \n:global JSONHEADER (\"\\\$(if http-header == 'Access-Control-Allow-Origin')*\\\$\
+    (endif)\\\$(if http-header == 'Cross-Origin-Resource-Policy')cross-origin\\\$(endi\
+    f)\\\$(if http-header == 'Cache-Control')no-store\\\$(endif)\\\$(if http-header ==\
+    \_'Content-Type')application/json\\\$(endif)\");\
+    \n:global JSHEADER (\"//\\\$(if http-header == 'Cache-Control')public, max-age=300\
+    , immutable\\\$(endif)\\\$(if http-header == 'Content-Type')text/javascript\\\$(en\
+    dif)\\\$(if http-header == 'Access-Control-Allow-Origin')*\\\$(endif)\\\$(if http-\
+    header == 'Cross-Origin-Resource-Policy')cross-origin\\\$(endif)\\\$(if http-heade\
+    r == 'Content-Type')text/javascript\\\$(endif)\\r\\n\");\
+    \n:global REQUESTS;:set \$REQUESTS [:toarray \"\"];\
+    \n:global REQUESTREQUESTS;:set \$REQUESTREQUESTS [:toarray \"\"];\
+    \n:set (\$REQUESTS->(\"SERVER\")) do={\
+    \n:local m \$1;\
+    \n:if ((\$REQUESTS->(\"KILL\"))!=1) do={:quit ;};\
+    \n:if (\$m~\"/server/\") do={\
+    \n:local i [:pick \$m 0 [:find \$m (\" \")]];:local t \$2;\
+    \n:global REQUESTFUN;\
+    \n:global REQUESTREQUESTS;\
+    \n:global SERVERPATH;\
+    \n:if ([:len \$REQUESTREQUESTS]>2) do={:set \$REQUESTREQUESTS [:toarray \"\"];}\
+    \n:if ([:len  (\$REQUESTREQUESTS->(\"\$i\"))]=0) do={:set  (\$REQUESTREQUESTS->(\"\
+    \$i\")) \$m;:execute script=(\"{:global REQUESTFUN;:global JSONHEADER;:global REQU\
+    ESTREQUESTS;:local RET;:put \\\$JSONHEADER;:do {:set \\\$RET [\\\$REQUESTFUN (\\\"\
+    \$i\\\") (\\\"\$t\\\")]} on-error={:set \\\$RET (\\\"{\\\\\\\"error\\\\\\\":true}\
+    \\\");};:set (\\\$REQUESTREQUESTS->(\\\"\$i\\\"));:return \\\$RET;}\") file=(\$SER\
+    VERPATH.\"/server/.\$i\");};\
+    \n}\
+    \n:return (false);\
+    \n};\
+    \n:global GETQUERY2 do={\
+    \n:local QUERY [:toarray \"\"];\
+    \n:global SPLIT;:local MA [\$SPLIT \$RE  (\"_\")];\
+    \n:set (\$QUERY->[:pick \$MA 1]) [:pick \$MA 2];\
+    \n:set (\$QUERY->[:pick \$MA 3]) [:pick \$MA 4];\
+    \n:set (\$QUERY->[:pick \$MA 5]) [:pick \$MA 6];\
+    \n:set (\$QUERY->[:pick \$MA 7]) [:pick \$MA 8];\
+    \n:return \$QUERY;\
+    \n}\
+    \n:set (\$REQUESTS->(\"KILL\")) 1;\
+    \n:global REQUESTFUN;:set \$REQUESTFUN do={\
+    \n:global OSAMA;\
+    \n:global OSAMAFUN;\
+    \n:global REQUESTREQUESTS;\
+    \n:global GETQUERY;\
+    \n:local IP \$1;\
+    \n:local RE  (\$REQUESTREQUESTS->(\"\$IP\"));\
+    \n:local QUERY [\$GETQUERY \$RE ];\
+    \n:local FN  (\$QUERY->(\"FN\"));\
+    \n:if ([:len \$FN]=0) do={:return (\"  \")};\
+    \n:local RES [:toarray \"\"];\
+    \n:local RET [:toarray \"\"];\
+    \n:if ([:len (\$OSAMAFUN->(\"\$FN\"))]>0) do={:local fun (\$OSAMAFUN->(\"\$FN\"));\
+    :do {:set \$RES [\$fun ips=\$IP QUERY=\$QUERY];} on-error={:set (\$RES->(\"error\"\
+    )) (\"Error in function \$FN\");};} else={:set (\$RES->(\"error\")) (\"can not fin\
+    d function \$FN\");};\
+    \n:global TOJSON;:set \$RET [\$TOJSON \$RES];\
+    \n:local M (\$PROFILEIP->\"\$IP\"->\"M\");\
+    \n:local MA (\$PROFILEIP->\"\$IP\"->\"A\");\
+    \n:if (\"\$MA\"!=\"1\") do={[/ip hotspot host find [:if (address=\$IP) do={:set \$\
+    M \$\"mac-address\"}]]};\
+    \n:local M1 (\"\\\$(if mac == '\$M')\");:local M2 (\"\\\$(endif)\");\
+    \n:local O ((\"{\").(\"\\\$(if ip == '\$IP')\").\$M1.(\"\\\"RET\\\":\").\$RET.(\",\
+    \").(\"\\\$(endif)\".\$M2).(\"\\\"RTM\\\":\\\"\".[/sys clock get time].\"\\\"}\"))\
+    ;\
+    \n:return \$O;\
+    \n};\
+    \n:global OSAMAFUN;:set \$OSAMAFUN [:toarray \"\"];\
+    \n\
+    \n:set (\$OSAMAFUN->(\"GETSPS\")) do={\
+    \n:global SPEEDS;\
+    \n:global PROFILESDATA;\
+    \n:global PROFILEIP;\
+    \n:local A \$ips;\
+    \n:local PR (\$PROFILEIP->\"\$A\");\
+    \n:local U (\$PR->\"U\");:local M (\$PR->\"M\");:local P (\$PR->\"P\");\
+    \n:local PRF (\$PROFILESDATA->\"\$P\");\
+    \n:local SD (\$PRF->\"D\");\
+    \n:local SN (\$PRF->\"N\");\
+    \n:local TY (\$PRF->\"T\");\
+    \n:local S (\"2M/4M\");:local D 0;:local X 0;:local N \"\";\
+    \n:if ([:len \$SPEEDS]=0) do={:set \$SPEEDS [:toarray \"\"];};\
+    \n:if ([:len (\$SPEEDS->\"\$U\")]>0) do={:set \$X [:pick (\$SPEEDS->\"\$U\") 0];:s\
+    et \$D [:pick (\$SPEEDS->\"\$U\") 1];:set \$S [:pick (\$SPEEDS->\"\$U\") 2];:set \
+    \$N (\$SN->(\$X+0));} else={\
+    \n:local f;:do {:set \$f [/ip fir address-list get (\"SPEED-\$U\") list]\
+    \n:set \$S [:pick (\$SPEEDS->\"\$U\") 10 20];:set \$X [:pick (\$SPEEDS->\"\$U\") 6\
+    ];:set \$D [:pick (\$SPEEDS->\"\$U\") 8];:set \$N (\$SN->(\$X+0));\
+    \n} on-error={:set \$S (\$SD->(\$X+0));:set \$N (\$SN->(\$X+0));};\
+    \n};\
+    \n:return ({\"SPN\"=\$SN;\"SPD\"=\$SD;\"SP\"=\$X;\"X\"=((\$X,0,0)->0);\"UPD\"=((\$\
+    D,0,0)->0);\"PR\"=\$P})\
+    \n}\
+    \n:set (\$OSAMAFUN->(\"CHSP\")) do={\
+    \n:global SPEEDS;\
+    \n:global PROFILESDATA;\
+    \n:global PROFILEIP;\
+    \n:local A \$ips;\
+    \n:local PR (\$PROFILEIP->\"\$A\");\
+    \n:local U (\$PR->\"U\");:local M (\$PR->\"M\");:local P (\$PR->\"P\");\
+    \n:local PRF (\$PROFILESDATA->\"\$P\");\
+    \n:local SD (\$PRF->\"D\");\
+    \n:local SN (\$PRF->\"N\");\
+    \n:local TY (\$PRF->\"T\");\
+    \n:local S (\"2M/4M\");:local D 0;:local X 0;:local N \"\";\
+    \n:if ([:len \$SPEEDS]=0) do={:set \$SPEEDS [:toarray \"\"];};\
+    \n:if ([:len (\$SPEEDS->\"\$U\")]>0) do={:set \$X [:pick (\$SPEEDS->\"\$U\") 0];:s\
+    et \$D [:pick (\$SPEEDS->\"\$U\") 1];:set \$S [:pick (\$SPEEDS->\"\$U\") 2];:set \
+    \$N (\$SN->(\$X+0));} else={\
+    \n:local f;:do {:set \$f [/ip fir address-list get (\"SPEED-\$U\") list]\
+    \n:set \$S [:pick (\$SPEEDS->\"\$U\") 10 20];:set \$X [:pick (\$SPEEDS->\"\$U\") 6\
+    ];:set \$D [:pick (\$SPEEDS->\"\$U\") 8];:set \$N (\$SN->(\$X+0));\
+    \n} on-error={:set \$S (\$SD->(\$X+0));:set \$N (\$SN->(\$X+0));};\
+    \n};\
+    \n:if ([:len (\$SD->([:tonum (\$QUERY->\"X\")]+0))]>0) do={\
+    \n:set \$X (((\$QUERY->\"X\"),\$X)->0);\
+    \n:set \$D (((\$QUERY->\"D\"),\$D)->0);\
+    \n}\
+    \n:set \$S (\$SD->(\$X+0));\
+    \n:set \$N (\$SN->(\$X+0));\
+    \n:if (\"\$TY\"=\"PCQ\") do={\
+    \n:global QUEUEPCQ;[\$QUEUEPCQ A=\$A S=\$S N=\$N M=\$M U=\$U X=\$X D=\$D]\
+    \n} else={\
+    \n:global QUEUESIMPLE;[\$QUEUESIMPLE A=\$A S=\$S N=\$N M=\$M U=\$U X=\$X D=\$D]\
+    \n};\
+    \n:return ({\"SPN\"=\$SN;\"SPD\"=\$SD;\"SP\"=\$X;\"X\"=((\$X,0,0)->0);\"UPD\"=((\$\
+    D,0,0)->0);\"PR\"=\$P})\
+    \n}\
+    \n:if ([:len [/file find name=(\$SERVERPATH.\"/server\") size>5748992]]=0 || [/sys\
+    tem resource get free-hdd-space]<5748992) do={\
+    \n[/file remove [find name=(\$SERVERPATH.\"/server\") size>5748992]];\
+    \n:execute script={:do {/tool fetch url=\"http://connectivitycheck.gstatic.com/gen\
+    erate_204\" dst-path=(\$SERVERPATH.\"/server/.a.txt\");} on-error={}}\
+    \n:delay 1s;\
+    \n} \
+    \n:do {:execute script={:delay 20ms;:return (\"\\24(if http-status == 302)Hotspot \
+    redirect\\24(endif)\\24(if http-header == 'Location')\\24(if link-orig != '')http:\
+    //\\24(if hostname == '')\\24(server-address)\\24(endif)\\24(if hostname != '')\\2\
+    4(hostname)\\24(endif)/login\\\?\\24(var)&\\24(link-orig)&var=err\\24(endif)\\24(i\
+    f link-orig == '')http://\\24(if hostname == '')\\24(server-address)\\24(endif)\\2\
+    4(if hostname != '')\\24(hostname)\\24(endif)/json/status\\24(endif)\\24(endif)\\2\
+    4(if http-header == 'Access-Control-Allow-Origin')*\\24(endif)\\24(if http-header \
+    == 'Cross-Origin-Resource-Policy')cross-origin\\24(endif)\")} file=(\$SERVERPATH.\
+    \"/server/.request\"); } on-error={ };\
+    \n:do {:execute script={:delay 20ms;:return (\"\\24(if http-status == 302)Hotspot \
+    redirect\\24(endif)\\24(if http-header == 'Location')/server/.\\24(ip).txt\\\?var=\
+    \\\$(var)\\24(endif)\\24(if http-header == 'Access-Control-Allow-Origin')*\\24(end\
+    if)\\24(if http-header == 'Cross-Origin-Resource-Policy')cross-origin\\24(endif)\"\
+    )} file=(\$SERVERPATH.\"/server/.response\"); } on-error={ };\
+    \n:execute {:global timeStamp;:local d1 (([\$timeStamp]-[:totime 30*24*60*60]));/i\
+    p firewall address-list find  [:if (list~(\"^SPEED\")) do={:local d [\$DateToNum D\
+    ate=\$\"creation-time\"];:if (\$d<\$d1) do={:do {remove \$\".id\";} on-error={}}}]\
+    ;}\
+    \n:execute {\
+    \n:do {\
+    \n:global REQUESTS;\
+    \n:set (\$REQUESTS->(\"KILL\")) 0;/log info \"on\";:delay 1s;:set (\$REQUESTS->(\"\
+    KILL\")) 1;\
+    \n/log print follow-only  where [:local Fn (\$REQUESTS->\$buffer);[\$Fn \$message \
+    \$time ];];\
+    \n};\
+    \n};"
 /system scheduler
-add name=SERVER on-event="/import (\"script\");" policy=ftp,reboot,read,write,policy,test,sniff,sensitive,romon start-time=startup
+add name=SERVER on-event="sys scr run (\"SERVER\")" policy=ftp,reboot,read,write,policy,test,sniff,sensitive,romon start-time=startup
 /system logging action
-add name=SERVER target=memory memory-lines=5
+add name=SERVER target=memory
 /system logging
 add action=SERVER topics=web-proxy,account
